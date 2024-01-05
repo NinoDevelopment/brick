@@ -15,10 +15,6 @@ import { ScheduleModule } from "@nestjs/schedule";
 import { Payment, PaymentSchema } from "./payment/schema/payment";
 import { Auth, AuthSchema } from "./auth/schema/auth";
 import { AppController } from "./app.controller";
-import { VacancyService } from "./vacancy/vacancy.service";
-import { VacancyController } from "./vacancy/vacancy.controller";
-import { Vacancy, VacancySchema } from "./vacancy/schema/vacancy";
-import { MailService } from "./mail/mail.service";
 import { MailModule } from "./mail/mail.module";
 import { ConfigModule } from "@nestjs/config";
 import { TelegramAPIModule } from "./telegram/telegram.module";
@@ -37,7 +33,6 @@ dotenv.config();
       { name: Order.name, schema: OrderSchema },
       { name: Payment.name, schema: PaymentSchema },
       { name: Auth.name, schema: AuthSchema },
-      { name: Vacancy.name, schema: VacancySchema },
     ]),
     MailModule,
     TelegramAPIModule,
@@ -47,8 +42,7 @@ dotenv.config();
     ItemController,
     OrderController,
     AppController,
-    VacancyController,
   ],
-  providers: [CategoryService, ItemService, OrderService, PaymentProvider, VacancyService],
+  providers: [CategoryService, ItemService, OrderService, PaymentProvider],
 })
 export class AppModule {}
