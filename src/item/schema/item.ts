@@ -1,6 +1,6 @@
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import mongoose, { HydratedDocument } from 'mongoose';
-import { Category } from 'src/category/schema/category';
+import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
+import mongoose, { HydratedDocument } from "mongoose";
+import { Category } from "src/category/schema/category";
 
 export type PriceDocument = HydratedDocument<Price>;
 
@@ -25,7 +25,7 @@ export class Weight {
 }
 const WeightSchema = SchemaFactory.createForClass(Weight);
 
-WeightSchema.virtual('title').get(function (this: WeightDocument) {
+WeightSchema.virtual("title").get(function (this: WeightDocument) {
   return `${this.value} грамм`;
 });
 

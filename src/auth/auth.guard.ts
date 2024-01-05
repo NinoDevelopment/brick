@@ -1,10 +1,10 @@
-import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/common';
-import { Observable } from 'rxjs';
-import { Auth } from './schema/auth';
-import { Model } from 'mongoose';
-import { InjectModel } from '@nestjs/mongoose';
-import * as argon2 from 'argon2';
-import * as crypto from 'crypto';
+import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from "@nestjs/common";
+import { Observable } from "rxjs";
+import { Auth } from "./schema/auth";
+import { Model } from "mongoose";
+import { InjectModel } from "@nestjs/mongoose";
+import * as argon2 from "argon2";
+import * as crypto from "crypto";
 
 @Injectable()
 export class AuthGuard implements CanActivate {
@@ -24,10 +24,10 @@ export class AuthGuard implements CanActivate {
 
   private async checkApiKey(request: any): Promise<boolean> {
     const headers = request.headers;
-    const authHeader = headers['authorization'];
-    if (!authHeader) throw new UnauthorizedException('не авторизован');
+    const authHeader = headers["authorization"];
+    if (!authHeader) throw new UnauthorizedException("не авторизован");
     const auth = await this.authModel.find();
-    if (!auth) throw new UnauthorizedException('не авторизован');
+    if (!auth) throw new UnauthorizedException("не авторизован");
     for (const a of auth) {
       const verifResult = await this.verifyKeyWithHash(authHeader, a.apiKey);
       if (verifResult) return true;

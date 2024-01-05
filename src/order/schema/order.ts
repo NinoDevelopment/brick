@@ -1,6 +1,6 @@
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import mongoose, { HydratedDocument } from 'mongoose';
-import { Item } from 'src/item/schema/item';
+import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
+import mongoose, { HydratedDocument } from "mongoose";
+import { Item } from "src/item/schema/item";
 
 export type OrderPositionDocument = HydratedDocument<OrderPosition>;
 
@@ -20,13 +20,13 @@ export class OrderPosition {
 }
 
 export enum DeliveryType {
-  SELF = 'SELF',
-  COURIER = 'COURIER',
+  SELF = "SELF",
+  COURIER = "COURIER",
 }
 
 export enum PaymentType {
-  CASH = 'CASH',
-  ONLINE = 'ONLINE',
+  CASH = "CASH",
+  ONLINE = "ONLINE",
 }
 
 export type AddressDocument = HydratedDocument<Address>;

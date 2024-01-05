@@ -10,7 +10,7 @@ import {
   IsString,
   Min,
   ValidateNested,
-} from 'class-validator';
+} from "class-validator";
 
 export class PriceDto {
   @IsPositive()

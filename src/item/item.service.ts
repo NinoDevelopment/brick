@@ -1,11 +1,11 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
-import * as mongoose from 'mongoose';
+import { Injectable, NotFoundException } from "@nestjs/common";
+import { InjectModel } from "@nestjs/mongoose";
+import { Model } from "mongoose";
+import * as mongoose from "mongoose";
 
-import { CreateItemDto, UpdateItemDto } from './dto/item.dto';
-import { Item } from './schema/item';
-import { Category } from 'src/category/schema/category';
+import { CreateItemDto, UpdateItemDto } from "./dto/item.dto";
+import { Item } from "./schema/item";
+import { Category } from "src/category/schema/category";
 
 @Injectable()
 export class ItemService {
@@ -20,31 +20,31 @@ export class ItemService {
   }
 
   async findAll(): Promise<Item[]> {
-    return this.itemModel.find().select('-images').exec();
+    return this.itemModel.find().select("-images").exec();
   }
 
   async findById(id: string): Promise<Item | null> {
-    return this.itemModel.findById(id).select('-images').exec();
+    return this.itemModel.findById(id).select("-images").exec();
   }
 
   async findByCategoryId(categoryId: string): Promise<Item[]> {
-    return this.itemModel.find({ categoryId: categoryId }).select('-images').exec();
+    return this.itemModel.find({ categoryId: categoryId }).select("-images").exec();
   }
 
   async findRandom(count: number): Promise<Item[]> {
-    const items = await this.itemModel.find({show: true}).select('-images').exec();
+    const items = await this.itemModel.find({ show: true }).select("-images").exec();
     shuffleArray(items);
     return items.length > count ? items.slice(0, count) : items;
   }
 
   async findRecommendations(count: number): Promise<Item[]> {
-    const items = await this.itemModel.find({ isRecommendation: true }).select('-images').exec();
+    const items = await this.itemModel.find({ isRecommendation: true }).select("-images").exec();
     shuffleArray(items);
     return items.length > count ? items.slice(0, count) : items;
   }
 
   async findImages(itemId: string): Promise<string[]> {
-    const results = this.itemModel.findOne({ _id: itemId }).select('images').exec();
+    const results = this.itemModel.findOne({ _id: itemId }).select("images").exec();
     if (!results) return [];
     return results as unknown as string[];
   }
@@ -65,7 +65,7 @@ export class ItemService {
     item.onlyBread = updateItemDto.onlyBread;
 
     const category = await this.categoryModel.findById(updateItemDto.categoryId).exec();
-    if (!category) throw new NotFoundException('категория не найдена');
+    if (!category) throw new NotFoundException("категория не найдена");
     item.categoryId = updateItemDto.categoryId;
 
     return item.save();

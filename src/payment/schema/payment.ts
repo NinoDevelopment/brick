@@ -1,11 +1,11 @@
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import mongoose, { HydratedDocument } from 'mongoose';
-import { Order } from 'src/order/schema/order';
+import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
+import mongoose, { HydratedDocument } from "mongoose";
+import { Order } from "src/order/schema/order";
 
 export enum PaymentStatus {
-  PENDING = 'PENDING',
-  SUCCEEDED = 'SUCCEEDED',
-  CANCELED = 'CANCELED',
+  PENDING = "PENDING",
+  SUCCEEDED = "SUCCEEDED",
+  CANCELED = "CANCELED",
 }
 
 export type PaymentDocument = HydratedDocument<Payment>;

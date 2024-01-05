@@ -1,6 +1,3 @@
 import { IsMongoId, IsPositive } from "class-validator";
 
-
-
-export class PaymentDto {
-}
+export class PaymentDto {}

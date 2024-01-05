@@ -1,9 +1,9 @@
-import { Controller, Post, UseGuards } from '@nestjs/common';
-import { AuthGuard } from './auth/auth.guard';
+import { Controller, Post, UseGuards } from "@nestjs/common";
+import { AuthGuard } from "./auth/auth.guard";
 
-@Controller('api')
+@Controller("api")
 export class AppController {
-  @Post('auth')
+  @Post("auth")
   @UseGuards(AuthGuard)
   async auth(): Promise<boolean> {
     return true;

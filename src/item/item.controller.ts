@@ -1,5 +1,15 @@
-import { Body, Controller, Delete, Get, NotFoundException, Param, Post, Put, UseGuards } from '@nestjs/common';
-import { ItemService } from './item.service';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  NotFoundException,
+  Param,
+  Post,
+  Put,
+  UseGuards,
+} from "@nestjs/common";
+import { ItemService } from "./item.service";
 import {
   CreateItemDto,
   DeleteItemsDto,
@@ -7,11 +17,11 @@ import {
   FindOneParams,
   FindSampleParams,
   UpdateItemDto,
-} from './dto/item.dto';
-import { Item } from './schema/item';
-import { AuthGuard } from 'src/auth/auth.guard';
+} from "./dto/item.dto";
+import { Item } from "./schema/item";
+import { AuthGuard } from "src/auth/auth.guard";
 
-@Controller('item')
+@Controller("item")
 export class ItemController {
   constructor(private itemService: ItemService) {}
 
@@ -20,29 +30,29 @@ export class ItemController {
     return this.itemService.findAll();
   }
 
-  @Get('category/:categoryId')
+  @Get("category/:categoryId")
   async findByCategoryId(@Param() param: FindByCategoryIdParams): Promise<Item[]> {
     return this.itemService.findByCategoryId(param.categoryId);
   }
 
-  @Get(':id')
+  @Get(":id")
   async findOne(@Param() param: FindOneParams): Promise<Item> {
     const item = await this.itemService.findById(param.id);
-    if (item === null) throw new NotFoundException('товар не найден');
+    if (item === null) throw new NotFoundException("товар не найден");
     return item;
   }
 
-  @Get('sample/:size')
+  @Get("sample/:size")
   async findSample(@Param() params: FindSampleParams): Promise<Item[]> {
     return this.itemService.findRandom(parseInt(params.size));
   }
 
-  @Get('recommendations/:size')
+  @Get("recommendations/:size")
   async findRecommendations(@Param() params: FindSampleParams): Promise<Item[]> {
     return this.itemService.findRecommendations(parseInt(params.size));
   }
 
-  @Get('/images/:id')
+  @Get("/images/:id")
   async findImages(@Param() param: FindOneParams): Promise<string[]> {
     return this.itemService.findImages(param.id);
   }
@@ -57,7 +67,7 @@ export class ItemController {
   @UseGuards(AuthGuard)
   async update(@Body() updateDto: UpdateItemDto): Promise<Item> {
     const item = await this.itemService.update(updateDto);
-    if (!item) throw new NotFoundException('товар не найден');
+    if (!item) throw new NotFoundException("товар не найден");
     return item;
   }
 

@@ -13,8 +13,8 @@ import {
   Max,
   ValidateIf,
   ValidateNested,
-} from 'class-validator';
-import { DeliveryType, PaymentType } from '../schema/order';
+} from "class-validator";
+import { DeliveryType, PaymentType } from "../schema/order";
 
 export class OrderPositionDto {
   @IsMongoId()

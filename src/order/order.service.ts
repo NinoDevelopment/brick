@@ -1,13 +1,13 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Order, PaymentType, DeliveryType } from './schema/order';
-import { Model } from 'mongoose';
-import { CreateOrderDto, OrderAmountDto, OrderPositionDto } from './dto/order.dto';
-import { Item } from 'src/item/schema/item';
-import { deliveryPrice, freeDeliveryThreshold } from './constants';
-import { MailService } from '../mail/mail.service';
-import { ItemService } from '../item/item.service';
-import { TelegramAPIService } from '../telegram/telegram.service';
+import { Injectable, NotFoundException } from "@nestjs/common";
+import { InjectModel } from "@nestjs/mongoose";
+import { Order, PaymentType, DeliveryType } from "./schema/order";
+import { Model } from "mongoose";
+import { CreateOrderDto, OrderAmountDto, OrderPositionDto } from "./dto/order.dto";
+import { Item } from "src/item/schema/item";
+import { deliveryPrice, freeDeliveryThreshold } from "./constants";
+import { MailService } from "../mail/mail.service";
+import { ItemService } from "../item/item.service";
+import { TelegramAPIService } from "../telegram/telegram.service";
 
 @Injectable()
 export class OrderService {
@@ -43,7 +43,9 @@ export class OrderService {
     }
 
     const orderAmount =
-      amount >= freeDeliveryThreshold || dto.deliveryType !== DeliveryType.COURIER ? discountedAmount : discountedAmount + deliveryPrice;
+      amount >= freeDeliveryThreshold || dto.deliveryType !== DeliveryType.COURIER
+        ? discountedAmount
+        : discountedAmount + deliveryPrice;
 
     console.log(orderAmount);
 
@@ -69,7 +71,7 @@ export class OrderService {
     setImmediate(() => {
       this.mailProvider.sendOrder(createdOrder, this.itemService);
       this.telegramService.sendOrder(createdOrder, this.itemService);
-    })
+    });
 
     return createdOrder.save();
   }

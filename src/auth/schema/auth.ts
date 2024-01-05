@@ -1,6 +1,6 @@
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { HydratedDocument } from 'mongoose';
-import * as mongoose from 'mongoose';
+import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
+import { HydratedDocument } from "mongoose";
+import * as mongoose from "mongoose";
 
 export type AuthDocument = HydratedDocument<Auth>;
 
@@ -9,7 +9,7 @@ export class Auth {
   @Prop({ type: String, required: true })
   apiKey: string;
 
-  @Prop({ type: String, default: '' })
+  @Prop({ type: String, default: "" })
   description: string;
 }
 

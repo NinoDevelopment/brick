@@ -1,34 +1,34 @@
-import { IsNotEmpty, IsString, IsMongoId, IsOptional, IsBoolean } from 'class-validator';
+import { IsNotEmpty, IsString, IsMongoId, IsOptional, IsBoolean } from "class-validator";
 
 export class CreateCategoryDto {
-    @IsNotEmpty()
-    @IsString()
-    name: string;
+  @IsNotEmpty()
+  @IsString()
+  name: string;
 
-    @IsOptional()
-    @IsString()
-    description: string;
+  @IsOptional()
+  @IsString()
+  description: string;
 
-    @IsOptional()
-    @IsString()
-    image: string;
+  @IsOptional()
+  @IsString()
+  image: string;
 
-    @IsOptional()
-    @IsBoolean()
-    hasSale: Boolean;
+  @IsOptional()
+  @IsBoolean()
+  hasSale: Boolean;
 }
 
 export class UpdateCategoryDto extends CreateCategoryDto {
-    @IsMongoId()
-    _id: string;
+  @IsMongoId()
+  _id: string;
 }
 
 export class DeleteCategoriesDto {
-    @IsMongoId({ each: true })
-    categoryIds: string[]
+  @IsMongoId({ each: true })
+  categoryIds: string[];
 }
 
 export class FindOneParams {
-    @IsMongoId()
-    id: string
+  @IsMongoId()
+  id: string;
 }
