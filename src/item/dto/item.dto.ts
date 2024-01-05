@@ -12,23 +12,6 @@ import {
   ValidateNested,
 } from "class-validator";
 
-export class PriceDto {
-  @IsPositive()
-  price: number;
-
-  @IsPositive()
-  weight: number;
-}
-
-export class WeightDto {
-  @IsPositive()
-  value: number;
-
-  @IsOptional()
-  @IsString()
-  title: string;
-}
-
 export class CreateItemDto {
   @IsNotEmpty()
   name: string;
@@ -50,17 +33,8 @@ export class CreateItemDto {
   @Min(0)
   discount: number;
 
-  @ArrayNotEmpty()
-  @ValidateNested()
-  prices: PriceDto[];
-
-  @ArrayNotEmpty()
-  @ValidateNested()
-  weights: WeightDto[];
-
-  @IsOptional()
-  @IsString()
-  composition: string;
+  @IsPositive()
+  price: number;
 
   @IsBoolean()
   available: Boolean;
@@ -70,9 +44,6 @@ export class CreateItemDto {
 
   @IsBoolean()
   show: Boolean;
-
-  @IsBoolean()
-  onlyBread: Boolean;
 }
 
 export class UpdateItemDto extends CreateItemDto {

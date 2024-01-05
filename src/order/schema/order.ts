@@ -10,9 +10,6 @@ export class OrderPosition {
   itemId: string;
 
   @Prop({ required: true })
-  weight: number;
-
-  @Prop({ required: true })
   price: number;
 
   @Prop({ required: true })
