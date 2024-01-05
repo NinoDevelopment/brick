@@ -24,7 +24,7 @@ services:
     environment:
       MONGO_INITDB_ROOT_USERNAME: ${MONGO_LOGIN}
       MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASS}
-    # сделать 'touch /home/mongodb_brick/.dbshell && chown -R 999:999 /home/mongodb_brick'
+    # сделать 'mkdir /home/mongodb_brick && touch /home/mongodb_brick/.dbshell && chown -R 999:999 /home/mongodb_brick'
     # нахуя? - не спрашивайте
     volumes: 
       - /home/mongodb_brick:/home/mongodb
