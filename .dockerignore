@@ -1,0 +1,11 @@
+README.md
+
+*.log 
+
+.gitignore
+.git 
+.github
+
+.dockerignore
+Dockerfile*
+docker-compose*ml
