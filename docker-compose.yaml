@@ -6,39 +6,39 @@ services:
       dockerfile: Dockerfile
       context: .
     ports:
-      - 3000:3000
+      - "3000:3000"
     env_file:
       - .env
-    volumes:
-     - /var/lib/docker/volumes/online-shop-front_data-certs/_data:/etc/nginx/ssl
+#    volumes:
+#     - /var/lib/docker/volumes/online-shop-front_data-certs/_data:/etc/nginx/ssl
     command: [ "npm", "run", "start" ]
 
   mongo:
     user: root
-    image: mongo:4.4.6
+    image: mongo:latest
     restart: always
     expose:
       - "27017"
     ports:
-      - 27027:27017
+      - "27027:27017"
     environment:
       MONGO_INITDB_ROOT_USERNAME: ${MONGO_LOGIN}
       MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASS}
-    # сделать 'touch /home/mongodb_bread/.dbshell && chown -R 999:999 /home/mongodb_bread'
+    # сделать 'touch /home/mongodb_brick/.dbshell && chown -R 999:999 /home/mongodb_brick'
     # нахуя? - не спрашивайте
     volumes: 
-      - /home/mongodb_bread:/home/mongodb
-      - /var/data/mongodb_bread:/data/db
+      - /home/mongodb_brick:/home/mongodb
+      - /var/data/mongodb_brick:/data/db
 
-#  mongo-express:
-#    user: root
-#    image: mongo-express
-#    restart: always
-#    ports:
-#      - 8083:8081
-#    environment:
-#      ME_CONFIG_BASICAUTH_USERNAME: ${MONGO_LOGIN}
-#      ME_CONFIG_BASICAUTH_PASSWORD: ${MONGO_PASS}
-#      ME_CONFIG_MONGODB_ADMINUSERNAME: ${MONGO_LOGIN}
-#      ME_CONFIG_MONGODB_ADMINPASSWORD: ${MONGO_PASS}
-#      ME_CONFIG_MONGODB_URL: ${MONGO_DSN}
+  mongo-express:
+    user: root
+    image: mongo-express
+    restart: always
+    ports:
+      - "8083:8081"
+    environment:
+      ME_CONFIG_BASICAUTH_USERNAME: ${MONGO_LOGIN}
+      ME_CONFIG_BASICAUTH_PASSWORD: ${MONGO_PASS}
+      ME_CONFIG_MONGODB_ADMINUSERNAME: ${MONGO_LOGIN}
+      ME_CONFIG_MONGODB_ADMINPASSWORD: ${MONGO_PASS}
+      ME_CONFIG_MONGODB_URL: ${MONGO_DSN}

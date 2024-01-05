@@ -6,18 +6,18 @@ import { urlencoded, json } from "express";
 import * as fs from "fs";
 
 async function bootstrap() {
-  const key = fs.readFileSync("/etc/nginx/ssl/live/hleb365.ru/privkey.pem");
-  const cert = fs.readFileSync("/etc/nginx/ssl/live/hleb365.ru/fullchain.pem");
+  // const key = fs.readFileSync("/etc/nginx/ssl/live/hleb365.ru/privkey.pem");
+  // const cert = fs.readFileSync("/etc/nginx/ssl/live/hleb365.ru/fullchain.pem");
 
-  const httpsOptions = {
-    key: key,
-    cert: cert,
-  };
+  // const httpsOptions = {
+  //   key: key,
+  //   cert: cert,
+  // };
+  //
+  // console.log(key);
+  // console.log(cert);
 
-  console.log(key);
-  console.log(cert);
-
-  const app = await NestFactory.create(AppModule, { httpsOptions, cors: true });
+  const app = await NestFactory.create(AppModule, /*{ httpsOptions, cors: true }*/);
 
   const config = new DocumentBuilder().setTitle("API").setVersion("1.0").addTag("api").build();
 
@@ -29,4 +29,4 @@ async function bootstrap() {
   app.use(urlencoded({ extended: true, limit: "100mb" }));
   await app.listen(3000);
 }
-bootstrap();
+bootstrap().catch(console.log);
