@@ -38,7 +38,7 @@ export class CalcService {
 
     if (!wallThickness || !brick) {
       throw new BadRequestException(
-        `brickType должен иметь значения 1 (Одинарный) или 2 (утолщенный); wallThickness - от 1 до 6 (кладка от 0.5 до 2.5)`,
+        `brickType должен иметь значения 1 (Одинарный) или 2 (утолщенный); wallThickness - от 1 до 5 (кладка от 0.5 до 2.5)`,
       );
     }
 
