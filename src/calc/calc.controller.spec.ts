@@ -26,12 +26,11 @@ describe("CalcController", () => {
     const mortarSeamEnabled = false;
 
     const calculateBrickQuantityByVolumeSpy = jest.spyOn(service, "calculateBrickQuantityByVolume");
-
-    const result = controller.calculateBrickQuantityByVolume(
+    const result = controller.calculateBrickQuantityByVolume({
       brickType,
       bricklayingVolume,
       mortarSeamEnabled,
-    );
+    });
 
     expect(calculateBrickQuantityByVolumeSpy).toHaveBeenCalledWith(
       brickType,

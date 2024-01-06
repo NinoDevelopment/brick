@@ -1,16 +1,20 @@
-import { Controller, Get, Query, ParseIntPipe, ParseBoolPipe } from "@nestjs/common";
+import { Controller, Post, Body, ValidationPipe } from "@nestjs/common";
 import { BrickType, CalcService, WallThicknessType } from "./calc.service";
 
 @Controller("calc")
 export class CalcController {
   constructor(private readonly calcService: CalcService) {}
 
-  @Get("byVolume")
+  @Post("byVolume")
   calculateBrickQuantityByVolume(
-    @Query("brickType", ParseIntPipe) brickType: BrickType,
-    @Query("bricklayingVolume", ParseIntPipe) bricklayingVolume: number,
-    @Query("mortarSeamEnabled", ParseBoolPipe) mortarSeamEnabled: boolean,
+    @Body(new ValidationPipe({ transform: true }))
+    data: {
+      brickType: BrickType;
+      bricklayingVolume: number;
+      mortarSeamEnabled: boolean;
+    },
   ): number {
+    const { brickType, bricklayingVolume, mortarSeamEnabled } = data;
     return this.calcService.calculateBrickQuantityByVolume(
       brickType,
       bricklayingVolume,
@@ -18,17 +22,29 @@ export class CalcController {
     );
   }
 
-  @Get("byParameters")
+  @Post("byParameters")
   calculateBrickQuantityByParameters(
-    @Query("wallThicknessType", ParseIntPipe) wallThicknessType: WallThicknessType,
-    @Query("brickType", ParseIntPipe) brickType: BrickType,
-    @Query("wallHeight", ParseIntPipe) wallHeight: number,
-    @Query("wallLength", ParseIntPipe) wallLength: number,
-    @Query("frameHeight", ParseIntPipe) frameHeight: number,
-    @Query("frameWidth", ParseIntPipe) frameWidth: number,
-    @Query("mortarSeamEnabled", ParseBoolPipe) mortarSeamEnabled: boolean,
+    @Body(new ValidationPipe({ transform: true }))
+    data: {
+      wallThicknessType: WallThicknessType;
+      brickType: BrickType;
+      wallHeight: number;
+      wallLength: number;
+      frameHeight: number;
+      frameWidth: number;
+      mortarSeamEnabled: boolean;
+    },
   ): number {
-    return this.calcService.calculateBrickQuantity(
+    const {
+      wallThicknessType,
+      brickType,
+      wallHeight,
+      wallLength,
+      frameHeight,
+      frameWidth,
+      mortarSeamEnabled,
+    } = data;
+    return this.calcService.calculateBrickQuantityByParameters(
       wallThicknessType,
       brickType,
       wallHeight,

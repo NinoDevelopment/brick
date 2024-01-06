@@ -25,7 +25,7 @@ export class CalcService {
     this.initializeWallThicknessMap();
   }
 
-  calculateBrickQuantity(
+  calculateBrickQuantityByParameters(
     wallThicknessType: WallThicknessType,
     brickType: BrickType,
     wallHeight: number,

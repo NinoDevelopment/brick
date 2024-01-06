@@ -25,7 +25,7 @@ describe("CalcService", () => {
       const frameHeight = 2.7;
       const frameWidth = 2;
 
-      const result = service.calculateBrickQuantity(
+      const result = service.calculateBrickQuantityByParameters(
         wallThickness,
         brickType,
         wallHeight,
