@@ -1,7 +1,4 @@
-import { Injectable } from "@nestjs/common";
-
-export type BrickType = 1 | 2;
-export type WallThicknessType = 1 | 2 | 3 | 4 | 5;
+import { Injectable, BadRequestException } from "@nestjs/common";
 
 interface Brick {
   size: { length: number; width: number; height: number };
@@ -15,19 +12,19 @@ interface WallThickness {
 
 @Injectable()
 export class CalcService {
-  private brickMap: Map<BrickType, Brick>;
-  private wallThicknessMap: Map<WallThicknessType, WallThickness>;
+  private brickMap: Map<number, Brick>;
+  private wallThicknessMap: Map<number, WallThickness>;
 
   constructor() {
-    this.brickMap = new Map<BrickType, Brick>();
-    this.wallThicknessMap = new Map<WallThicknessType, WallThickness>();
+    this.brickMap = new Map<number, Brick>();
+    this.wallThicknessMap = new Map<number, WallThickness>();
     this.initializeBrickMap();
     this.initializeWallThicknessMap();
   }
 
   calculateBrickQuantityByParameters(
-    wallThicknessType: WallThicknessType,
-    brickType: BrickType,
+    wallThicknessType: number,
+    brickType: number,
     wallHeight: number,
     wallLength: number,
     frameHeight: number,
@@ -40,8 +37,9 @@ export class CalcService {
     if (mortarSeamEnabled) mortarSeamWidth = 10;
 
     if (!wallThickness || !brick) {
-      console.error("Invalid wall thickness or brick type.");
-      return 0;
+      throw new BadRequestException(
+        `brickType должен иметь значения 1 (Одинарный) или 2 (утолщенный); wallThickness - от 1 до 6 (кладка от 0.5 до 2.5)`,
+      );
     }
 
     const wallArea = wallHeight * wallLength;
@@ -58,7 +56,7 @@ export class CalcService {
   }
 
   calculateBrickQuantityByVolume(
-    brickType: BrickType,
+    brickType: number,
     bricklayingVolume: number,
     mortarSeamEnabled: boolean,
   ): number {
@@ -67,8 +65,9 @@ export class CalcService {
     if (mortarSeamEnabled) mortarSeamWidth = 10;
 
     if (!brick) {
-      console.error("Invalid brick type.");
-      return 0;
+      throw new BadRequestException(
+        `brickType должен иметь значения 1 (Одинарный) или 2 (утолщенный)`,
+      );
     }
     const brickVolume =
       ((brick.size.length + mortarSeamWidth) *

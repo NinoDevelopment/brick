@@ -1,11 +1,10 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { IsBoolean, IsNumber, IsPositive } from "class-validator";
-import { BrickType, WallThicknessType } from "../calc.service";
 
 export class CalculateBrickQuantityByVolumeDto {
   @ApiProperty()
   @IsNumber()
-  brickType: BrickType;
+  brickType: number;
 
   @ApiProperty()
   @IsNumber()
@@ -20,11 +19,11 @@ export class CalculateBrickQuantityByVolumeDto {
 export class CalculateBrickQuantityByParametersDto {
   @ApiProperty()
   @IsNumber()
-  wallThicknessType: WallThicknessType;
+  wallThicknessType: number;
 
   @ApiProperty()
   @IsNumber()
-  brickType: BrickType;
+  brickType: number;
 
   @ApiProperty()
   @IsNumber()
