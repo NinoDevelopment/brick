@@ -1,4 +1,4 @@
-import { Injectable, BadRequestException } from "@nestjs/common";
+import { Injectable } from "@nestjs/common";
 
 interface Brick {
   size: { length: number; width: number; height: number };
@@ -37,9 +37,7 @@ export class CalcService {
     if (mortarSeamEnabled) mortarSeamWidth = 10;
 
     if (!wallThickness || !brick) {
-      throw new BadRequestException(
-        `brickType должен иметь значения 1 (Одинарный) или 2 (утолщенный); wallThickness - от 1 до 6 (кладка от 0.5 до 2.5)`,
-      );
+      return 0;
     }
 
     const wallArea = wallHeight * wallLength;
@@ -65,9 +63,7 @@ export class CalcService {
     if (mortarSeamEnabled) mortarSeamWidth = 10;
 
     if (!brick) {
-      throw new BadRequestException(
-        `brickType должен иметь значения 1 (Одинарный) или 2 (утолщенный)`,
-      );
+      return 0;
     }
     const brickVolume =
       ((brick.size.length + mortarSeamWidth) *
