@@ -1,11 +1,11 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { IsBoolean, IsNumber, IsPositive, Validate } from "class-validator";
-import { CheckFrameHeight, CheckFrameWidth, CheckListValidator } from "./validators";
+import { CheckFrameHeight, CheckFrameWidth } from "./validators";
 
 export class CalculateBrickQuantityByVolumeDto {
   @ApiProperty()
   @IsNumber()
-  @Validate(CheckListValidator, ["brickType", [1, 2]])
+  @IsPositive()
   brickType: number;
 
   @ApiProperty()
@@ -21,12 +21,12 @@ export class CalculateBrickQuantityByVolumeDto {
 export class CalculateBrickQuantityByParametersDto {
   @ApiProperty()
   @IsNumber()
-  @Validate(CheckListValidator, ["wallThicknessType", [1, 2, 3, 4, 5]])
+  @IsPositive()
   wallThicknessType: number;
 
   @ApiProperty()
   @IsNumber()
-  @Validate(CheckListValidator, ["brickType", [1, 2]])
+  @IsPositive()
   brickType: number;
 
   @ApiProperty()
