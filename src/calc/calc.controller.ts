@@ -1,4 +1,4 @@
-import { Controller, Post, Body, ValidationPipe } from "@nestjs/common";
+import { Controller, Post, Body } from "@nestjs/common";
 import { CalcService } from "./calc.service";
 import {
   CalculateBrickQuantityByVolumeDto,
@@ -10,9 +10,7 @@ export class CalcController {
   constructor(private readonly calcService: CalcService) {}
 
   @Post("byVolume")
-  calculateBrickQuantityByVolume(
-    @Body(new ValidationPipe()) params: CalculateBrickQuantityByVolumeDto,
-  ): number {
+  calculateBrickQuantityByVolume(@Body() params: CalculateBrickQuantityByVolumeDto): number {
     return this.calcService.calculateBrickQuantityByVolume(
       params.brickType,
       params.bricklayingVolume,
@@ -22,7 +20,7 @@ export class CalcController {
 
   @Post("byParameters")
   calculateBrickQuantityByParameters(
-    @Body(new ValidationPipe()) params: CalculateBrickQuantityByParametersDto,
+    @Body() params: CalculateBrickQuantityByParametersDto,
   ): number {
     return this.calcService.calculateBrickQuantityByParameters(
       params.wallThicknessType,
