@@ -1,5 +1,9 @@
 import { Controller, Post, Body, ValidationPipe } from "@nestjs/common";
-import { BrickType, CalcService, WallThicknessType } from "./calc.service";
+import { CalcService } from "./calc.service";
+import {
+  CalculateBrickQuantityByVolumeDto,
+  CalculateBrickQuantityByParametersDto,
+} from "./dto/calc.dto";
 
 @Controller("calc")
 export class CalcController {
@@ -7,51 +11,27 @@ export class CalcController {
 
   @Post("byVolume")
   calculateBrickQuantityByVolume(
-    @Body(new ValidationPipe({ transform: true }))
-    data: {
-      brickType: BrickType;
-      bricklayingVolume: number;
-      mortarSeamEnabled: boolean;
-    },
+    @Body(new ValidationPipe()) params: CalculateBrickQuantityByVolumeDto,
   ): number {
-    const { brickType, bricklayingVolume, mortarSeamEnabled } = data;
     return this.calcService.calculateBrickQuantityByVolume(
-      brickType,
-      bricklayingVolume,
-      mortarSeamEnabled,
+      params.brickType,
+      params.bricklayingVolume,
+      params.mortarSeamEnabled,
     );
   }
 
   @Post("byParameters")
   calculateBrickQuantityByParameters(
-    @Body(new ValidationPipe({ transform: true }))
-    data: {
-      wallThicknessType: WallThicknessType;
-      brickType: BrickType;
-      wallHeight: number;
-      wallLength: number;
-      frameHeight: number;
-      frameWidth: number;
-      mortarSeamEnabled: boolean;
-    },
+    @Body(new ValidationPipe()) params: CalculateBrickQuantityByParametersDto,
   ): number {
-    const {
-      wallThicknessType,
-      brickType,
-      wallHeight,
-      wallLength,
-      frameHeight,
-      frameWidth,
-      mortarSeamEnabled,
-    } = data;
     return this.calcService.calculateBrickQuantityByParameters(
-      wallThicknessType,
-      brickType,
-      wallHeight,
-      wallLength,
-      frameHeight,
-      frameWidth,
-      mortarSeamEnabled,
+      params.wallThicknessType,
+      params.brickType,
+      params.wallHeight,
+      params.wallLength,
+      params.frameHeight,
+      params.frameWidth,
+      params.mortarSeamEnabled,
     );
   }
 }
