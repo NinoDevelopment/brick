@@ -1,6 +1,6 @@
 import { IsArray, IsBoolean, IsMongoId, IsNotEmpty, IsOptional, IsString } from "class-validator";
 
-export class CreateGalleryImageDto {
+export class CreateCategoryDto {
   @IsNotEmpty()
   name: string;
 
@@ -21,7 +21,7 @@ export class CreateGalleryImageDto {
   show: Boolean;
 }
 
-export class UpdateGalleryImageDto extends CreateGalleryImageDto {
+export class UpdateCategoryDto extends CreateCategoryDto {
   @IsMongoId()
   _id: string;
 }
@@ -36,7 +36,7 @@ export class FindOneParams {
   id: string;
 }
 
-export class DeleteGalleryImagesDto {
+export class DeleteImagesDto {
   @IsMongoId({ each: true })
-  galleryImageIds: string[];
+  imageIds: string[];
 }

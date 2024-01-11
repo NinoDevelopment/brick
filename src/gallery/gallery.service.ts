@@ -3,57 +3,60 @@ import { InjectModel } from "@nestjs/mongoose";
 import { Model } from "mongoose";
 import * as mongoose from "mongoose";
 
-import { CreateGalleryImageDto, UpdateGalleryImageDto } from "./dto/gallery.dto";
-import { GalleryImage } from "./schema/gallery";
+import { CreateCategoryDto, UpdateCategoryDto } from "./dto/gallery.dto";
+import { GalleryCategory } from "./schema/gallery";
 import { Category } from "src/category/schema/category";
 
 @Injectable()
 export class GalleryService {
   constructor(
-    @InjectModel(GalleryImage.name) private galleryImageModel: Model<GalleryImage>,
+    @InjectModel(GalleryCategory.name) private galleryCategoryModel: Model<GalleryCategory>,
     @InjectModel(Category.name) private categoryModel: Model<Category>,
   ) {}
 
-  async create(createGalleryImageDto: CreateGalleryImageDto): Promise<GalleryImage> {
-    const createdGalleryImage = new this.galleryImageModel(createGalleryImageDto);
-    return createdGalleryImage.save();
+  async create(createCategoryDto: CreateCategoryDto): Promise<GalleryCategory> {
+    const createdCategory = new this.galleryCategoryModel(createCategoryDto);
+    return createdCategory.save();
   }
 
-  async findAll(): Promise<GalleryImage[]> {
-    return this.galleryImageModel.find().select("-images").exec();
+  async findAll(): Promise<GalleryCategory[]> {
+    return this.galleryCategoryModel.find().select("-images").exec();
   }
 
-  async findById(id: string): Promise<GalleryImage | null> {
-    return this.galleryImageModel.findById(id).select("-images").exec();
+  async findById(id: string): Promise<GalleryCategory | null> {
+    return this.galleryCategoryModel.findById(id).select("-images").exec();
   }
 
-  async findByCategoryId(categoryId: string): Promise<GalleryImage[]> {
-    return this.galleryImageModel.find({ categoryId: categoryId }).select("-images").exec();
+  async findByCategoryId(categoryId: string): Promise<GalleryCategory[]> {
+    return this.galleryCategoryModel.find({ categoryId: categoryId }).select("-images").exec();
   }
 
   async findImages(galleryImageId: string): Promise<string[]> {
-    const results = this.galleryImageModel.findOne({ _id: galleryImageId }).select("images").exec();
+    const results = this.galleryCategoryModel
+      .findOne({ _id: galleryImageId })
+      .select("images")
+      .exec();
     if (!results) return [];
     return results as unknown as string[];
   }
 
-  async update(updateGalleryImageDto: UpdateGalleryImageDto): Promise<GalleryImage | null> {
-    const galleryImage = await this.galleryImageModel.findById(updateGalleryImageDto._id);
-    if (!galleryImage) return null;
-    galleryImage.name = updateGalleryImageDto.name;
-    galleryImage.description = updateGalleryImageDto.description;
-    galleryImage.images = updateGalleryImageDto.images;
-    galleryImage.show = updateGalleryImageDto.show;
+  async update(updateCategoryDto: UpdateCategoryDto): Promise<GalleryCategory | null> {
+    const galleryCategory = await this.galleryCategoryModel.findById(updateCategoryDto._id);
+    if (!galleryCategory) return null;
+    galleryCategory.name = updateCategoryDto.name;
+    galleryCategory.description = updateCategoryDto.description;
+    galleryCategory.images = updateCategoryDto.images;
+    galleryCategory.show = updateCategoryDto.show;
 
-    const category = await this.categoryModel.findById(updateGalleryImageDto.categoryId).exec();
+    const category = await this.categoryModel.findById(updateCategoryDto.categoryId).exec();
     if (!category) throw new NotFoundException("категория не найдена");
-    galleryImage.categoryId = updateGalleryImageDto.categoryId;
+    galleryCategory.categoryId = updateCategoryDto.categoryId;
 
-    return galleryImage.save();
+    return galleryCategory.save();
   }
 
   async delete(galleryImageIds: string[]) {
-    await this.galleryImageModel
+    await this.galleryCategoryModel
       .deleteMany({ _id: { $in: galleryImageIds.map((id) => new mongoose.Types.ObjectId(id)) } })
       .exec();
     return galleryImageIds;
