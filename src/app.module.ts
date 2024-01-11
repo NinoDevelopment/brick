@@ -19,6 +19,7 @@ import { MailModule } from "./mail/mail.module";
 import { ConfigModule } from "@nestjs/config";
 import { TelegramAPIModule } from "./telegram/telegram.module";
 import { CalcModule } from './calc/calc.module';
+import { GalleryModule } from './gallery/gallery.module';
 dotenv.config();
 
 @Module({
@@ -38,6 +39,7 @@ dotenv.config();
     MailModule,
     TelegramAPIModule,
     CalcModule,
+    GalleryModule,
   ],
   controllers: [
     CategoryController,
