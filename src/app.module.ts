@@ -20,6 +20,7 @@ import { ConfigModule } from "@nestjs/config";
 import { TelegramAPIModule } from "./telegram/telegram.module";
 import { CalcModule } from './calc/calc.module';
 import { GalleryModule } from './gallery/gallery.module';
+import { GalleryCategory, GalleryCategorySchema } from "./gallery/schema/gallery";
 dotenv.config();
 
 @Module({
@@ -35,6 +36,7 @@ dotenv.config();
       { name: Order.name, schema: OrderSchema },
       { name: Payment.name, schema: PaymentSchema },
       { name: Auth.name, schema: AuthSchema },
+      { name: GalleryCategory.name, schema: GalleryCategorySchema },
     ]),
     MailModule,
     TelegramAPIModule,
