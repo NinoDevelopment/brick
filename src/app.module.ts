@@ -19,7 +19,8 @@ import { MailModule } from "./mail/mail.module";
 import { ConfigModule } from "@nestjs/config";
 import { TelegramAPIModule } from "./telegram/telegram.module";
 import { CalcModule } from './calc/calc.module';
-import { GalleryModule } from './gallery/gallery.module';
+import { GalleryController } from './gallery/gallery.controller';
+import { GalleryService } from './gallery/gallery.service';
 import { GalleryCategory, GalleryCategorySchema } from "./gallery/schema/gallery";
 dotenv.config();
 
@@ -41,14 +42,14 @@ dotenv.config();
     MailModule,
     TelegramAPIModule,
     CalcModule,
-    GalleryModule,
   ],
   controllers: [
     CategoryController,
     ItemController,
     OrderController,
     AppController,
+    GalleryController,
   ],
-  providers: [CategoryService, ItemService, OrderService, PaymentProvider],
+  providers: [CategoryService, ItemService, OrderService, PaymentProvider, GalleryService],
 })
 export class AppModule {}
