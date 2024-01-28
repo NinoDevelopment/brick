@@ -23,7 +23,6 @@ export class MailService {
               <tr><td>Товар:</td><td><a href="https://hleb365.ru/product/${position.itemId}">${
           item ? item.name : `Товар ${i + 1}`
         }</a></td></tr>
-              <tr><td>Вес:</td><td>${position.weight} грамм</td></tr>
               <tr><td>Кол-во:</td><td>${position.quantity} шт.</td></tr>
               ${item && !item.available ? `<tr><td>Предзаказ:</td><td>Да</td></tr>` : ""}
             </tbody>

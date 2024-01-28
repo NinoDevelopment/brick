@@ -22,8 +22,7 @@ export class TelegramAPIService {
       order.positions.map(async (position) => {
         const item = await itemGetter.findById(position.itemId);
         if (item === null) return "";
-        return `*Товар:* [${item.name}](https://hleb365.ru/product/${position.itemId})
-*Вес:* ${position.weight} грамм
+        return `*Товар:* [${item.name}](https://brick-nn.sbs/product/${position.itemId})
 *Кол-во:* ${position.quantity} шт.
 
 `;

@@ -56,13 +56,9 @@ export class ItemService {
     item.description = updateItemDto.description;
     item.images = updateItemDto.images;
     item.discount = updateItemDto.discount;
-    item.prices = updateItemDto.prices;
-    item.weights = updateItemDto.weights;
-    item.composition = updateItemDto.composition;
     item.available = updateItemDto.available;
     item.isRecommendation = updateItemDto.isRecommendation;
     item.show = updateItemDto.show;
-    item.onlyBread = updateItemDto.onlyBread;
 
     const category = await this.categoryModel.findById(updateItemDto.categoryId).exec();
     if (!category) throw new NotFoundException("категория не найдена");
