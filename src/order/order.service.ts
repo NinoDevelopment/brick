@@ -28,11 +28,6 @@ export class OrderService {
       const item = await this.itemModel.findById(pos.itemId).exec();
       if (!item) throw new NotFoundException(`товар ${pos.itemId} не найден`);
 
-      if (!item.prices.find((p) => p.price === pos.price && p.weight === pos.weight))
-        throw new NotFoundException(
-          `позиция по товару ${pos.itemId} с ценой ${pos.price} и весом ${pos.weight} не найдена`,
-        );
-
       const price = pos.price * pos.quantity;
 
       amount += price;
@@ -85,11 +80,6 @@ export class OrderService {
     for (const pos of positions) {
       const item = await this.itemModel.findById(pos.itemId).exec();
       if (!item) throw new NotFoundException(`товар ${pos.itemId} не найден`);
-
-      if (!item.prices.find((p) => p.price === pos.price && p.weight === pos.weight))
-        throw new NotFoundException(
-          `позиция по товару ${pos.itemId} с ценой ${pos.price} и весом ${pos.weight} не найдена`,
-        );
 
       const price = pos.price * pos.quantity;
 
