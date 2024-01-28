@@ -17,7 +17,14 @@ async function bootstrap() {
   // console.log(key);
   // console.log(cert);
 
-  const app = await NestFactory.create(AppModule, /*{ httpsOptions, cors: true }*/);
+  const app = await NestFactory.create(AppModule, {
+    cors: {
+      origin: "*",
+      methods: ["GET", "HEAD", "PUT", "PATCH", "POST", "DELETE"],
+      allowedHeaders: "*",
+      credentials: false,
+    },
+  });
 
   const config = new DocumentBuilder().setTitle("API").setVersion("1.0").addTag("api").build();
 
