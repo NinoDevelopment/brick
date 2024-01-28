@@ -22,6 +22,8 @@ services:
       - traefik.http.middlewares.https-redirect.redirectscheme.permanent=true
       # Устанавливаем миддлвейр редиректа с HTTP на HTTPS
       - traefik.http.routers.app-http.middlewares=https-redirect
+    networks:
+      - traefik-public
     restart: always
     build:
       dockerfile: Dockerfile
@@ -50,6 +52,8 @@ services:
     volumes: 
       - /home/mongodb_brick:/home/mongodb
       - /var/data/mongodb_brick:/data/db
+    networks:
+      - traefik-public
 
   mongo-express:
     user: root
@@ -63,3 +67,12 @@ services:
       ME_CONFIG_MONGODB_ADMINUSERNAME: ${MONGO_LOGIN}
       ME_CONFIG_MONGODB_ADMINPASSWORD: ${MONGO_PASS}
       ME_CONFIG_MONGODB_URL: ${MONGO_DSN}
+    networks:
+      - traefik-public
+
+
+
+# Внешняя сеть для связи между контейнерами докера
+networks:
+  traefik-public:
+    external: true
