@@ -24,9 +24,6 @@ export class OrderPositionDto {
   price: number;
 
   @IsPositive()
-  weight: number;
-
-  @IsPositive()
   quantity: number;
 }
 
