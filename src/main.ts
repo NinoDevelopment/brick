@@ -27,6 +27,6 @@ async function bootstrap() {
   app.useGlobalPipes(new ValidationPipe({ transform: true }));
   app.use(json({ limit: "100mb" }));
   app.use(urlencoded({ extended: true, limit: "100mb" }));
-  await app.listen(3000);
+  await app.listen(8080);
 }
 bootstrap().catch(console.log);
