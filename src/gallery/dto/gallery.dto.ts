@@ -3,10 +3,7 @@ import { IsArray, IsBoolean, IsMongoId, IsNotEmpty, IsOptional, IsString } from 
 export class CreateCategoryDto {
   @IsNotEmpty()
   name: string;
-
-  @IsMongoId()
-  categoryId: string;
-
+  
   @IsOptional()
   @IsString()
   description: string;
