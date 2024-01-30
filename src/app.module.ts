@@ -18,10 +18,10 @@ import { AppController } from "./app.controller";
 import { MailModule } from "./mail/mail.module";
 import { ConfigModule } from "@nestjs/config";
 import { TelegramAPIModule } from "./telegram/telegram.module";
-import { CalcModule } from './calc/calc.module';
-import { GalleryController } from './gallery/gallery.controller';
-import { GalleryService } from './gallery/gallery.service';
-import { GalleryCategory, GalleryCategorySchema } from "./gallery/schema/gallery";
+import { CalcModule } from "./calc/calc.module";
+import { GalleryController } from "./gallery/gallery.controller";
+import { GalleryService } from "./gallery/gallery.service";
+import { Project, ProjectSchema } from "./gallery/schema/gallery";
 dotenv.config();
 
 @Module({
@@ -37,7 +37,7 @@ dotenv.config();
       { name: Order.name, schema: OrderSchema },
       { name: Payment.name, schema: PaymentSchema },
       { name: Auth.name, schema: AuthSchema },
-      { name: GalleryCategory.name, schema: GalleryCategorySchema },
+      { name: Project.name, schema: ProjectSchema },
     ]),
     MailModule,
     TelegramAPIModule,

@@ -11,13 +11,12 @@ import {
 } from "@nestjs/common";
 import { GalleryService } from "./gallery.service";
 import {
-  CreateCategoryDto,
-  DeleteImagesDto,
-  FindByCategoryIdParams,
+  CreateProjectDto,
+  DeleteProjectsDto,
+  UpdateProjectDto,
   FindOneParams,
-  UpdateCategoryDto,
 } from "./dto/gallery.dto";
-import { GalleryCategory } from "./schema/gallery";
+import { Project } from "./schema/gallery";
 import { AuthGuard } from "src/auth/auth.guard";
 
 @Controller("gallery")
@@ -25,45 +24,40 @@ export class GalleryController {
   constructor(private galleryService: GalleryService) {}
 
   @Get()
-  async findAll(): Promise<GalleryCategory[]> {
-    return this.galleryService.findAll();
-  }
-
-  @Get("category/:categoryId")
-  async findByCategoryId(@Param() param: FindByCategoryIdParams): Promise<GalleryCategory[]> {
-    return this.galleryService.findByCategoryId(param.categoryId);
+  async findAllProjects(): Promise<Project[]> {
+    return this.galleryService.findAllProjects();
   }
 
   @Get(":id")
-  async findOne(@Param() param: FindOneParams): Promise<GalleryCategory> {
-    const galleryImage = await this.galleryService.findById(param.id);
-    if (galleryImage === null) throw new NotFoundException("изображение не найдено");
-    return galleryImage;
+  async findProjectById(@Param() param: FindOneParams): Promise<Project> {
+    const project = await this.galleryService.findProjectById(param.id);
+    if (project === null) throw new NotFoundException("Проект не найден");
+    return project;
   }
 
   @Get("/images/:id")
-  async findImages(@Param() param: FindOneParams): Promise<string[]> {
-    return this.galleryService.findImages(param.id);
+  async findProjectImages(@Param() param: FindOneParams): Promise<string[]> {
+    return this.galleryService.findProjectImages(param.id);
   }
 
   @Post()
   @UseGuards(AuthGuard)
-  async create(@Body() createDto: CreateCategoryDto): Promise<GalleryCategory> {
-    return this.galleryService.create(createDto);
+  async createProject(@Body() createDto: CreateProjectDto): Promise<Project> {
+    return this.galleryService.createProject(createDto);
   }
 
   @Put()
   @UseGuards(AuthGuard)
-  async update(@Body() updateDto: UpdateCategoryDto): Promise<GalleryCategory> {
-    const galleryCategory = await this.galleryService.update(updateDto);
-    if (!galleryCategory) throw new NotFoundException("категория изображений не найдена");
-    return galleryCategory;
+  async updateProject(@Body() updateDto: UpdateProjectDto): Promise<Project> {
+    const project = await this.galleryService.updateProject(updateDto);
+    if (!project) throw new NotFoundException("Проект не найден");
+    return project;
   }
 
   @Delete()
   @UseGuards(AuthGuard)
-  async delete(@Body() deleteDto: DeleteImagesDto): Promise<DeleteImagesDto> {
-    await this.galleryService.delete(deleteDto.imageIds);
-    return deleteDto;
+  async deleteProjects(@Body() deleteProjectsDto: DeleteProjectsDto): Promise<DeleteProjectsDto> {
+    await this.galleryService.deleteProjects(deleteProjectsDto.projectIds);
+    return deleteProjectsDto;
   }
 }
