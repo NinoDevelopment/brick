@@ -1,12 +1,10 @@
 import { IsArray, IsBoolean, IsMongoId, IsNotEmpty, IsOptional, IsString } from "class-validator";
 
-export class CreateCategoryDto {
+export class CreateProjectDto {
   @IsNotEmpty()
+  @IsString()
   name: string;
 
-  @IsMongoId()
-  categoryId: string;
-  
   @IsOptional()
   @IsString()
   description: string;
@@ -21,22 +19,17 @@ export class CreateCategoryDto {
   show: Boolean;
 }
 
-export class UpdateCategoryDto extends CreateCategoryDto {
+export class UpdateProjectDto extends CreateProjectDto {
   @IsMongoId()
   _id: string;
 }
 
-export class FindByCategoryIdParams {
-  @IsMongoId()
-  categoryId: string;
+export class DeleteProjectsDto {
+  @IsMongoId({ each: true })
+  projectIds: string[];
 }
 
 export class FindOneParams {
   @IsMongoId()
   id: string;
-}
-
-export class DeleteImagesDto {
-  @IsMongoId({ each: true })
-  imageIds: string[];
 }

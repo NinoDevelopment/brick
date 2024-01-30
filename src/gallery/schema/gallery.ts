@@ -1,16 +1,12 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import mongoose, { HydratedDocument } from "mongoose";
-import { Category } from "src/category/schema/category";
 
-export type GalleryCategoryDocument = HydratedDocument<GalleryCategory>;
+export type ProjectDocument = HydratedDocument<Project>;
 
 @Schema()
-export class GalleryCategory {
+export class Project {
   @Prop({ required: true })
   name: string;
-
-  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: Category.name })
-  categoryId: string;
 
   @Prop()
   description: string;
@@ -22,4 +18,4 @@ export class GalleryCategory {
   show: Boolean;
 }
 
-export const GalleryCategorySchema = SchemaFactory.createForClass(GalleryCategory);
+export const ProjectSchema = SchemaFactory.createForClass(Project);

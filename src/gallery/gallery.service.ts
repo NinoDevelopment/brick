@@ -3,62 +3,46 @@ import { InjectModel } from "@nestjs/mongoose";
 import { Model } from "mongoose";
 import * as mongoose from "mongoose";
 
-import { CreateCategoryDto, UpdateCategoryDto } from "./dto/gallery.dto";
-import { GalleryCategory } from "./schema/gallery";
-import { Category } from "src/category/schema/category";
+import { CreateProjectDto, UpdateProjectDto } from "./dto/gallery.dto";
+import { Project } from "./schema/gallery";
 
 @Injectable()
 export class GalleryService {
-  constructor(
-    @InjectModel(GalleryCategory.name) private galleryCategoryModel: Model<GalleryCategory>,
-    @InjectModel(Category.name) private categoryModel: Model<Category>,
-  ) {}
+  constructor(@InjectModel(Project.name) private projectModel: Model<Project>) {}
 
-  async create(createCategoryDto: CreateCategoryDto): Promise<GalleryCategory> {
-    const createdCategory = new this.galleryCategoryModel(createCategoryDto);
-    return createdCategory.save();
+  async createProject(createProjectDto: CreateProjectDto): Promise<Project> {
+    const createdProject = new this.projectModel(createProjectDto);
+    return createdProject.save();
   }
 
-  async findAll(): Promise<GalleryCategory[]> {
-    return this.galleryCategoryModel.find().select("-images").exec();
+  async findAllProjects(): Promise<Project[]> {
+    return this.projectModel.find().select("-images").exec();
   }
 
-  async findById(id: string): Promise<GalleryCategory | null> {
-    return this.galleryCategoryModel.findById(id).select("-images").exec();
+  async findProjectById(projectId: string): Promise<Project | null> {
+    return this.projectModel.findById(projectId).select("-images").exec();
   }
 
-  async findByCategoryId(categoryId: string): Promise<GalleryCategory[]> {
-    return this.galleryCategoryModel.find({ categoryId: categoryId }).select("-images").exec();
-  }
-
-  async findImages(galleryImageId: string): Promise<string[]> {
-    const results = this.galleryCategoryModel
-      .findOne({ _id: galleryImageId })
-      .select("images")
-      .exec();
+  async findProjectImages(projectId: string): Promise<string[]> {
+    const results = this.projectModel.findOne({ _id: projectId }).select("images").exec();
     if (!results) return [];
     return results as unknown as string[];
   }
 
-  async update(updateCategoryDto: UpdateCategoryDto): Promise<GalleryCategory | null> {
-    const galleryCategory = await this.galleryCategoryModel.findById(updateCategoryDto._id);
-    if (!galleryCategory) return null;
-    galleryCategory.name = updateCategoryDto.name;
-    galleryCategory.description = updateCategoryDto.description;
-    galleryCategory.images = updateCategoryDto.images;
-    galleryCategory.show = updateCategoryDto.show;
-
-    const category = await this.categoryModel.findById(updateCategoryDto.categoryId).exec();
-    if (!category) throw new NotFoundException("категория не найдена");
-    galleryCategory.categoryId = updateCategoryDto.categoryId;
-
-    return galleryCategory.save();
+  async updateProject(updateProjectDto: UpdateProjectDto): Promise<Project | null> {
+    const project = await this.projectModel.findById(updateProjectDto._id);
+    if (!project) throw new NotFoundException("Проект не найден");
+    project.name = updateProjectDto.name;
+    project.description = updateProjectDto.description;
+    project.images = updateProjectDto.images;
+    project.show = updateProjectDto.show;
+    return project.save();
   }
 
-  async delete(galleryImageIds: string[]) {
-    await this.galleryCategoryModel
-      .deleteMany({ _id: { $in: galleryImageIds.map((id) => new mongoose.Types.ObjectId(id)) } })
+  async deleteProjects(projectIds: string[]) {
+    await this.projectModel
+      .deleteMany({ _id: { $in: projectIds.map((id) => new mongoose.Types.ObjectId(id)) } })
       .exec();
-    return galleryImageIds;
+    return projectIds;
   }
 }
