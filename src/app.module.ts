@@ -21,9 +21,7 @@ import { CalcModule } from "./calc/calc.module";
 import { GalleryController } from "./gallery/gallery.controller";
 import { GalleryService } from "./gallery/gallery.service";
 import { Project, ProjectSchema } from "./gallery/schema/gallery";
-import { TelegramAPIService } from './telegram/telegram.service';
 import { ConfigModule, ConfigService } from "@nestjs/config";
-import { TelegramService } from "nestjs-telegram";
 dotenv.config();
 
 @Module({
@@ -59,8 +57,6 @@ dotenv.config();
     OrderService,
     PaymentProvider,
     GalleryService,
-    TelegramAPIService,
-    TelegramService
   ],
 })
 export class AppModule {}
