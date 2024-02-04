@@ -28,7 +28,9 @@ export class TelegramAPIService {
 Компания: ${req.companyName}
 Email: ${req.email}
 Текст: ${req.text}`,
-          })));
+          }).toPromise()
+      )
+    );
   }
 
   async sendOrder(order: Order, itemGetter: ItemGetter): Promise<TelegramMessage[]> {

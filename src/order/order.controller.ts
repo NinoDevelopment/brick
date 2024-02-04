@@ -68,7 +68,8 @@ export class OrderController {
 
   @Post("/callme")
   async callMe(@Body() req: CallMeDto): Promise<{success: boolean}> {
-    await this.tegramProvider.sendCallmeRequest(req);
+    const msg = await this.tegramProvider.sendCallmeRequest(req);
+    console.log(msg[0]);
     return { success: true };
   }
 }
