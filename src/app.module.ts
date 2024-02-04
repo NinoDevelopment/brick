@@ -22,6 +22,7 @@ import { CalcModule } from "./calc/calc.module";
 import { GalleryController } from "./gallery/gallery.controller";
 import { GalleryService } from "./gallery/gallery.service";
 import { Project, ProjectSchema } from "./gallery/schema/gallery";
+import { TelegramAPIService } from './telegram/telegram.service';
 dotenv.config();
 
 @Module({
@@ -50,6 +51,13 @@ dotenv.config();
     AppController,
     GalleryController,
   ],
-  providers: [CategoryService, ItemService, OrderService, PaymentProvider, GalleryService],
+  providers: [
+    CategoryService,
+    ItemService,
+    OrderService,
+    PaymentProvider,
+    GalleryService,
+    TelegramAPIService
+  ],
 })
 export class AppModule {}

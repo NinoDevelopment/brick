@@ -2,6 +2,7 @@ import {
   ArrayNotEmpty,
   IsArray,
   IsEnum,
+  IsEmail,
   IsMongoId,
   IsNotEmpty,
   IsNotEmptyObject,
@@ -15,6 +16,23 @@ import {
   ValidateNested,
 } from "class-validator";
 import { DeliveryType, PaymentType } from "../schema/order";
+
+export class CallMeDto {
+  @IsString()
+  @IsNotEmpty()
+  name: string;
+
+  @IsString()
+  @IsNotEmpty()
+  companyName: string;
+
+  @IsEmail()
+  email: string;
+
+  @IsString()
+  @IsNotEmpty()
+  text: string;
+}
 
 export class OrderPositionDto {
   @IsMongoId()

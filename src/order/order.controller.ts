@@ -15,13 +15,19 @@ import {
   CreateOrderDto,
   FindOneParams,
   OrderAmountDto,
+  CallMeDto
 } from "./dto/order.dto";
 import { PaymentProvider } from "src/payment/payment.provider";
 import { AuthGuard } from "src/auth/auth.guard";
+import { TelegramAPIService } from "src/telegram/telegram.service";
 
 @Controller("order")
 export class OrderController {
-  constructor(private orderService: OrderService, private paymentProvider: PaymentProvider) {}
+  constructor(
+    private orderService: OrderService,
+    private paymentProvider: PaymentProvider,
+    private tegramProvider: TelegramAPIService
+  ) {}
 
   @Post()
   async create(@Body() createOrderDto: CreateOrderDto): Promise<Order> {
@@ -58,5 +64,11 @@ export class OrderController {
   async payForOrder(@Param() params: FindOneParams): Promise<{ confirmationURL: string }> {
     const payment = await this.paymentProvider.create(params.id);
     return { confirmationURL: payment.confirmURL };
+  }
+
+  @Post("/callme")
+  async callMe(@Body() req: CallMeDto): Promise<{success: boolean}> {
+    await this.tegramProvider.sendCallmeRequest(req);
+    return { success: true };
   }
 }

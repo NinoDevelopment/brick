@@ -2,6 +2,7 @@ import { Injectable } from "@nestjs/common";
 import { TelegramMessage, TelegramService, TelegramUser } from "nestjs-telegram";
 import { DeliveryType, Order, PaymentType } from "../order/schema/order";
 import { Item } from "../item/schema/item";
+import { CallMeDto } from "../order/dto/order.dto";
 import { ConfigService } from "@nestjs/config";
 
 interface ItemGetter {
@@ -13,6 +14,20 @@ export class TelegramAPIService {
 
   testBot(): Promise<TelegramUser> {
     return this.bot.getMe().toPromise();
+  }
+
+  async sendCallmeRequest(req: CallMeDto): Promise<TelegramMessage[]> {
+    const chats = this.config.getOrThrow("TELEGRAM_CHAT_IDS").toString().split("|");
+    return Promise.all(
+      chats.map((chat_id: string) =>
+        this.bot.sendMessage({
+            chat_id: chat_id,
+            text: `Запроc на связь от пользователя
+Имя: ${req.name}
+Компания: ${req.companyName}
+Email: ${req.email}
+Текст: ${req.text}`,
+          })));
   }
 
   async sendOrder(order: Order, itemGetter: ItemGetter): Promise<TelegramMessage[]> {
