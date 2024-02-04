@@ -18,6 +18,7 @@ export class TelegramAPIService {
 
   async sendCallmeRequest(req: CallMeDto): Promise<TelegramMessage[]> {
     const chats = this.config.getOrThrow("TELEGRAM_CHAT_IDS").toString().split("|");
+    console.log("chats: ", chats)
     return Promise.all(
       chats.map((chat_id: string) =>
         this.bot.sendMessage({
