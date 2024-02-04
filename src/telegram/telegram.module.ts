@@ -1,10 +1,11 @@
 import { Module } from "@nestjs/common";
 import { TelegramModule } from "nestjs-telegram";
-import { ConfigService } from "@nestjs/config";
+import {ConfigModule, ConfigService } from "@nestjs/config";
 import { TelegramAPIService } from "./telegram.service";
 
 @Module({
   imports: [
+    ConfigModule,
     TelegramModule.forRootAsync({
       useFactory: async (configService: ConfigService) => ({
         botKey: configService.getOrThrow("TELEGRAM_API_KEY"),
