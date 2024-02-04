@@ -8,6 +8,9 @@ export type ItemDocument = HydratedDocument<Item>;
 export class Item {
   @Prop({ required: true })
   name: string;
+  
+  @Prop()
+  color: string;
 
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: Category.name })
   categoryId: string;

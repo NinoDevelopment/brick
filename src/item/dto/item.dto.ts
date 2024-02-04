@@ -39,6 +39,9 @@ export class CreateItemDto {
   @IsBoolean()
   available: Boolean;
 
+  @IsString()
+  color: string;
+
   @IsBoolean()
   isRecommendation: Boolean;
 
