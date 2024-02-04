@@ -23,6 +23,7 @@ import { GalleryController } from "./gallery/gallery.controller";
 import { GalleryService } from "./gallery/gallery.service";
 import { Project, ProjectSchema } from "./gallery/schema/gallery";
 import { TelegramAPIService } from './telegram/telegram.service';
+import { ConfigService } from "@nestjs/config";
 dotenv.config();
 
 @Module({
@@ -52,6 +53,7 @@ dotenv.config();
     GalleryController,
   ],
   providers: [
+    ConfigService,
     CategoryService,
     ItemService,
     OrderService,
