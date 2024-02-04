@@ -60,6 +60,7 @@ export class ItemService {
     item.isRecommendation = updateItemDto.isRecommendation;
     item.show = updateItemDto.show;
     item.price = updateItemDto.price;
+    item.color = updateItemDto.color;
 
     const category = await this.categoryModel.findById(updateItemDto.categoryId).exec();
     if (!category) throw new NotFoundException("категория не найдена");
