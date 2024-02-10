@@ -144,8 +144,8 @@ export class CreateOrderDto {
   paymentType: PaymentType;
 
   @ApiProperty()
-  @IsString()
   @IsOptional()
+  @IsString()
   promocode: string;
 }
 
@@ -176,7 +176,7 @@ export class CalculateOrderAmountRequest {
   positions: OrderPositionDto[];
 
   @ApiProperty()
-  @IsString()
   @IsOptional()
+  @IsString()
   promocode: string;
 }
