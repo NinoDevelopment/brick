@@ -46,6 +46,7 @@ export class OrderService {
 
     const order: Order = {
       phoneNumber: dto.phoneNumber,
+      email: dto.email,
       fullName: dto.fullName,
       address: dto.address,
       shopAddress: dto.shopAddress,
@@ -57,6 +58,7 @@ export class OrderService {
       paid: false,
       deliveryType: dto.deliveryType,
       paymentType: dto.paymentType,
+      promocode: dto.promocode,
     };
 
     console.log(order);

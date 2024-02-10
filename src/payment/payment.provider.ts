@@ -6,7 +6,7 @@ import { Cron, CronExpression } from "@nestjs/schedule";
 import { YooCheckout, ICreatePayment } from "@a2seven/yoo-checkout";
 import { OrderService } from "src/order/order.service";
 
-const RETURN_URL = "https://hleb365.ru/order/status";
+const RETURN_URL = "https://brick-nn.sbs/order/status";
 
 @Injectable()
 export class PaymentProvider {

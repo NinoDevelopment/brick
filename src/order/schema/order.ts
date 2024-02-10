@@ -22,8 +22,9 @@ export enum DeliveryType {
 }
 
 export enum PaymentType {
-  CASH = "CASH",
+  CASH   = "CASH",
   ONLINE = "ONLINE",
+  SCHET  =  "SCHET",
 }
 
 export type AddressDocument = HydratedDocument<Address>;
@@ -59,6 +60,9 @@ export class Order {
   @Prop({ required: true })
   phoneNumber: string;
 
+  @Prop()
+  email: string;
+
   @Prop({ required: true })
   fullName: string;
 
@@ -91,5 +95,8 @@ export class Order {
 
   @Prop()
   paymentType: PaymentType;
+
+  @Prop()
+  promocode: string;
 }
 export const OrderSchema = SchemaFactory.createForClass(Order);
