@@ -18,6 +18,33 @@ import {
 import { DeliveryType, PaymentType } from "../schema/order";
 import { ApiProperty } from "@nestjs/swagger";
 
+export class SchetInfoDto {
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  bankName: string;
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  bic: string;
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  correspondentAccount: string;
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  receiverAccount: string;
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  inn: string;
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  kpp: string;
+}
+
 export class CallMeDto {
   @ApiProperty()
   @IsString()
@@ -152,33 +179,6 @@ export class CreateOrderDto {
   @ValidateIf((o: CreateOrderDto) => o.paymentType === PaymentType.SCHET)
   @ValidateNested()
   schetInfo?: SchetInfoDto;
-}
-
-export class SchetInfoDto {
-  @ApiProperty()
-  @IsString()
-  @IsNotEmpty()
-  bankName: string;
-  @ApiProperty()
-  @IsString()
-  @IsNotEmpty()
-  bic: string;
-  @ApiProperty()
-  @IsString()
-  @IsNotEmpty()
-  correspondentAccount: string;
-  @ApiProperty()
-  @IsString()
-  @IsNotEmpty()
-  receiverAccount: string;
-  @ApiProperty()
-  @IsString()
-  @IsNotEmpty()
-  inn: string;
-  @ApiProperty()
-  @IsString()
-  @IsNotEmpty()
-  kpp: string;
 }
 
 export class FindOneParams {

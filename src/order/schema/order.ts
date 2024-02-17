@@ -4,6 +4,17 @@ import { Item } from "src/item/schema/item";
 
 export type OrderPositionDocument = HydratedDocument<OrderPosition>;
 
+export type PromocodeDocument = HydratedDocument<Promocode>;
+@Schema()
+export class Promocode {
+  @Prop({ required: true })
+  code: string;
+  
+  @Prop({ required: true })
+  skidka: number;
+}
+export const PromocodeSchema = SchemaFactory.createForClass(Promocode);
+
 @Schema()
 export class SchetInfo {
   @Prop()
@@ -119,15 +130,3 @@ export class Order {
   schetInfo?: SchetInfo;
 }
 export const OrderSchema = SchemaFactory.createForClass(Order);
-
-
-export type PromocodeDocument = HydratedDocument<Order>;
-@Schema()
-export class Promocode {
-  @Prop({ required: true })
-  code: string;
-  
-  @Prop({ required: true })
-  skidka: number;
-}
-export const PromocodeSchema = SchemaFactory.createForClass(Order);
