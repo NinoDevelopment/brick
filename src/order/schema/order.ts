@@ -4,6 +4,7 @@ import { Item } from "src/item/schema/item";
 
 export type OrderPositionDocument = HydratedDocument<OrderPosition>;
 
+@Schema()
 export class SchetInfo {
   @Prop()
   bankName: string;
@@ -118,3 +119,15 @@ export class Order {
   schetInfo?: SchetInfo;
 }
 export const OrderSchema = SchemaFactory.createForClass(Order);
+
+
+export type PromocodeDocument = HydratedDocument<Order>;
+@Schema()
+export class Promocode {
+  @Prop({ required: true })
+  code: string;
+  
+  @Prop({ required: true })
+  skidka: number;
+}
+export const PromocodeSchema = SchemaFactory.createForClass(Order);

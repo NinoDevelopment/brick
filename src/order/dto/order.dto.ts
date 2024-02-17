@@ -212,3 +212,15 @@ export class CalculateOrderAmountRequest {
   @IsString()
   promocode: string;
 }
+
+export class CreatePromocodeDto {
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  code: string;
+
+  @ApiProperty()
+  @IsNumber()
+  @IsPositive()
+  skidka: number;
+}

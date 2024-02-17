@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   NotFoundException,
   Param,
@@ -15,7 +16,8 @@ import {
   CreateOrderDto,
   FindOneParams,
   OrderAmountDto,
-  CallMeDto
+  CallMeDto,
+  CreatePromocodeDto
 } from "./dto/order.dto";
 import { PaymentProvider } from "src/payment/payment.provider";
 import { AuthGuard } from "src/auth/auth.guard";
@@ -71,5 +73,17 @@ export class OrderController {
     const msg = await this.tegramProvider.sendCallmeRequest(req);
     console.log(msg[0]);
     return { success: true };
+  }
+
+  @Post("promocode")
+  @UseGuards(AuthGuard)
+  async createPromocode(@Body() req: CreatePromocodeDto): Promise<{ success: boolean }> {
+    return { success: await this.orderService.createPromocode(req.code, req.skidka) };
+  }
+
+  @Delete("promocode/:code")
+  @UseGuards(AuthGuard)
+  async removePromocode(@Param("code") code: string): Promise<{ success: boolean }> {
+    return { success: await this.orderService.removePromocode(code) };
   }
 }

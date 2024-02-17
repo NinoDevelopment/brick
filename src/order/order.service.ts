@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
-import { Order, PaymentType, DeliveryType } from "./schema/order";
+import { Order, PaymentType, DeliveryType, Promocode } from "./schema/order";
 import { Model } from "mongoose";
 import { CreateOrderDto, OrderAmountDto, OrderPositionDto } from "./dto/order.dto";
 import { Item } from "src/item/schema/item";
@@ -16,10 +16,27 @@ export class OrderService {
     private orderModel: Model<Order>,
     @InjectModel(Item.name)
     private itemModel: Model<Item>,
+    @InjectModel(Promocode.name)
+    private promocodeModel: Model<Promocode>,
     private mailProvider: MailService,
     private itemService: ItemService,
     private telegramService: TelegramAPIService,
   ) {}
+
+  async createPromocode(code: string, skidka: number): Promise<boolean> {
+    const exist = await this.promocodeModel.findOne({ code: code }).exec();
+    if (exist) return false;
+    const newPromocode = new this.promocodeModel({ code: code, skidka: skidka });
+    await newPromocode.save();
+    return true;
+  }
+
+  async removePromocode(code: string): Promise<boolean> {
+    const exist = await this.promocodeModel.findOne({ code: code }).exec();
+    if (!exist) return false;
+    await exist.deleteOne();
+    return true;
+  }
 
   async create(dto: CreateOrderDto): Promise<Order> {
     let amount = 0;
