@@ -6,17 +6,6 @@ import { urlencoded, json } from "express";
 import * as fs from "fs";
 
 async function bootstrap() {
-  // const key = fs.readFileSync("/etc/nginx/ssl/live/hleb365.ru/privkey.pem");
-  // const cert = fs.readFileSync("/etc/nginx/ssl/live/hleb365.ru/fullchain.pem");
-
-  // const httpsOptions = {
-  //   key: key,
-  //   cert: cert,
-  // };
-  //
-  // console.log(key);
-  // console.log(cert);
-
   const app = await NestFactory.create(AppModule, {
     cors: {
       origin: "*",
@@ -26,7 +15,11 @@ async function bootstrap() {
     },
   });
 
-  const config = new DocumentBuilder().setTitle("API").setVersion("1.0").addTag("api").build();
+  const config = new DocumentBuilder()
+    .setTitle("API") 
+    .setVersion("1.0")
+    .addTag("api")
+    .build();
 
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup("api", app, document);

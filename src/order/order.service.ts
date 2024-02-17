@@ -66,8 +66,8 @@ export class OrderService {
     const createdOrder = new this.orderModel(order);
 
     setImmediate(() => {
-      this.mailProvider.sendOrder(createdOrder, this.itemService);
-      this.telegramService.sendOrder(createdOrder, this.itemService);
+      this.mailProvider.sendOrder(createdOrder, this.itemService).catch(console.error);
+      this.telegramService.sendOrder(createdOrder, this.itemService).catch(console.error);
     });
 
     return createdOrder.save();
