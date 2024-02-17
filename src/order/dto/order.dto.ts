@@ -147,6 +147,38 @@ export class CreateOrderDto {
   @IsOptional()
   @IsString()
   promocode: string;
+
+  @ApiProperty()
+  @ValidateIf((o: CreateOrderDto) => o.paymentType === PaymentType.SCHET)
+  @ValidateNested()
+  schetInfo?: SchetInfoDto;
+}
+
+export class SchetInfoDto {
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  bankName: string;
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  bic: string;
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  correspondentAccount: string;
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  receiverAccount: string;
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  inn: string;
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  kpp: string;
 }
 
 export class FindOneParams {

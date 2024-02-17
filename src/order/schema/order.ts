@@ -4,6 +4,21 @@ import { Item } from "src/item/schema/item";
 
 export type OrderPositionDocument = HydratedDocument<OrderPosition>;
 
+export class SchetInfo {
+  @Prop()
+  bankName: string;
+  @Prop()
+  bic: string;
+  @Prop()
+  correspondentAccount: string;
+  @Prop()
+  receiverAccount: string;
+  @Prop()
+  inn: string;
+  @Prop()
+  kpp: string;
+}
+
 @Schema()
 export class OrderPosition {
   @Prop({ required: true, type: mongoose.Schema.Types.ObjectId, ref: Item.name })
@@ -98,5 +113,8 @@ export class Order {
 
   @Prop()
   promocode: string;
+
+  @Prop()
+  schetInfo?: SchetInfo;
 }
 export const OrderSchema = SchemaFactory.createForClass(Order);

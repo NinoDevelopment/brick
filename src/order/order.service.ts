@@ -42,7 +42,7 @@ export class OrderService {
         ? discountedAmount
         : discountedAmount + deliveryPrice;
 
-    console.log(orderAmount);
+    
 
     const order: Order = {
       phoneNumber: dto.phoneNumber,
@@ -59,9 +59,10 @@ export class OrderService {
       deliveryType: dto.deliveryType,
       paymentType: dto.paymentType,
       promocode: dto.promocode,
+      schetInfo: dto.schetInfo,
     };
 
-    console.log(order);
+    console.log("order: ", order);
 
     const createdOrder = new this.orderModel(order);
 
