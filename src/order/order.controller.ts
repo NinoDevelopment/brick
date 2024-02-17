@@ -10,7 +10,7 @@ import {
   UseGuards,
 } from "@nestjs/common";
 import { OrderService } from "./order.service";
-import { Order } from "./schema/order";
+import { Order, Promocode } from "./schema/order";
 import {
   CalculateOrderAmountRequest,
   CreateOrderDto,
@@ -85,5 +85,11 @@ export class OrderController {
   @UseGuards(AuthGuard)
   async removePromocode(@Param("code") code: string): Promise<{ success: boolean }> {
     return { success: await this.orderService.removePromocode(code) };
+  }
+
+  @Get("promocode")
+  @UseGuards(AuthGuard)
+  async getPromocodes(): Promise<Promocode[]> {
+    return await this.orderService.getPromocodes();
   }
 }

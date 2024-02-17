@@ -23,6 +23,10 @@ export class OrderService {
     private telegramService: TelegramAPIService,
   ) {}
 
+  async getPromocodes(): Promise<Promocode[]> {
+    return this.promocodeModel.find().exec();
+  }
+
   async createPromocode(code: string, skidka: number): Promise<boolean> {
     const exist = await this.promocodeModel.findOne({ code: code }).exec();
     if (exist) return false;
