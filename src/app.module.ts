@@ -9,7 +9,7 @@ import { OrderService } from "./order/order.service";
 import { Category, CategorySchema } from "./category/schema/category";
 import * as dotenv from "dotenv";
 import { Item, ItemSchema } from "./item/schema/item";
-import { Order, OrderSchema, Promocode } from "./order/schema/order";
+import { Order, OrderSchema, Promocode, PromocodeSchema } from "./order/schema/order";
 import { PaymentProvider } from "./payment/payment.provider";
 import { ScheduleModule } from "@nestjs/schedule";
 import { Payment, PaymentSchema } from "./payment/schema/payment";
@@ -38,7 +38,7 @@ dotenv.config();
       { name: Payment.name, schema: PaymentSchema },
       { name: Auth.name, schema: AuthSchema },
       { name: Project.name, schema: ProjectSchema },
-      { name: Promocode.name, schema: Promocode }
+      { name: Promocode.name, schema: PromocodeSchema }
     ]),
     MailModule,
     TelegramAPIModule,

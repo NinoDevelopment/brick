@@ -5,6 +5,7 @@ import { Item } from "src/item/schema/item";
 export type OrderPositionDocument = HydratedDocument<OrderPosition>;
 
 export type PromocodeDocument = HydratedDocument<Promocode>;
+
 @Schema()
 export class Promocode {
   @Prop({ required: true })
@@ -13,6 +14,7 @@ export class Promocode {
   @Prop({ required: true })
   skidka: number;
 }
+
 export const PromocodeSchema = SchemaFactory.createForClass(Promocode);
 
 @Schema()
