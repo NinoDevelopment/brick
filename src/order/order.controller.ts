@@ -75,7 +75,7 @@ export class OrderController {
     return { success: true };
   }
 
-  @Get("/all-promocodes")
+  @Get("all-promocodes")
   @UseGuards(AuthGuard)
   async getPromocodes(): Promise<Promocode[]> {
     console.log("order/promocode");
