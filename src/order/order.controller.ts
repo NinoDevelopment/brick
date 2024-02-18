@@ -90,6 +90,7 @@ export class OrderController {
   @Get("promocode")
   @UseGuards(AuthGuard)
   async getPromocodes(): Promise<Promocode[]> {
+    console.log("order/promocode");
     return await this.orderService.getPromocodes();
   }
 }
