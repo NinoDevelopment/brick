@@ -36,12 +36,12 @@ export class OrderController {
     return this.orderService.create(createOrderDto);
   }
 
-  @Post("amount")
+  @Post("/amount")
   async calculateOrderAmount(@Body() req: CalculateOrderAmountRequest): Promise<OrderAmountDto> {
     return this.orderService.calculateOrderAmount(req.positions);
   }
 
-  @Put("complete/:id")
+  @Put("/complete/:id")
   @UseGuards(AuthGuard)
   async complete(@Param() params: FindOneParams): Promise<Order> {
     const order = await this.orderService.complete(params.id);
@@ -62,7 +62,7 @@ export class OrderController {
     return order;
   }
 
-  @Post("plati/:id")
+  @Post("/plati/:id")
   async payForOrder(@Param() params: FindOneParams): Promise<{ confirmationURL: string }> {
     const payment = await this.paymentProvider.create(params.id);
     return { confirmationURL: payment.confirmURL };
@@ -75,20 +75,20 @@ export class OrderController {
     return { success: true };
   }
 
-  @Get("promocode")
+  @Get("/promocode")
   @UseGuards(AuthGuard)
   async getPromocodes(): Promise<Promocode[]> {
     console.log("order/promocode");
     return await this.orderService.getPromocodes();
   }
 
-  @Post("promocode")
+  @Post("/promocode")
   @UseGuards(AuthGuard)
   async createPromocode(@Body() req: CreatePromocodeDto): Promise<{ success: boolean }> {
     return { success: await this.orderService.createPromocode(req.code, req.skidka) };
   }
 
-  @Delete("promocode/:code")
+  @Delete("/promocode/:code")
   @UseGuards(AuthGuard)
   async removePromocode(@Param("code") code: string): Promise<{ success: boolean }> {
     return { success: await this.orderService.removePromocode(code) };
