@@ -75,6 +75,13 @@ export class OrderController {
     return { success: true };
   }
 
+  @Get("promocode")
+  @UseGuards(AuthGuard)
+  async getPromocodes(): Promise<Promocode[]> {
+    console.log("order/promocode");
+    return await this.orderService.getPromocodes();
+  }
+
   @Post("promocode")
   @UseGuards(AuthGuard)
   async createPromocode(@Body() req: CreatePromocodeDto): Promise<{ success: boolean }> {
@@ -85,12 +92,5 @@ export class OrderController {
   @UseGuards(AuthGuard)
   async removePromocode(@Param("code") code: string): Promise<{ success: boolean }> {
     return { success: await this.orderService.removePromocode(code) };
-  }
-
-  @Get("promocode")
-  @UseGuards(AuthGuard)
-  async getPromocodes(): Promise<Promocode[]> {
-    console.log("order/promocode");
-    return await this.orderService.getPromocodes();
   }
 }
