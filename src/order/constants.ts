@@ -1,2 +1,2 @@
-export const freeDeliveryThreshold = 600;
-export const deliveryPrice = 300;
+export const freeDeliveryThreshold = 100_000;
+export const deliveryPrice = 5_000;
