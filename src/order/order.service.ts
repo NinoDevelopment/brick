@@ -100,7 +100,7 @@ export class OrderService {
     return createdOrder.save();
   }
 
-  async calculateOrderAmount(positions: OrderPositionDto[]): Promise<OrderAmountDto> {
+  async calculateOrderAmount(positions: OrderPositionDto[], promocode: string): Promise<OrderAmountDto> {
     if (positions.length === 0) {
       return { amount: 0, amountWithDelivery: 0, discountedAmount: 0 };
     }
@@ -119,8 +119,17 @@ export class OrderService {
       discountedAmount += discountedPrice;
     }
 
-    const withDelivery =
+    let withDelivery =
       amount >= freeDeliveryThreshold ? discountedAmount : discountedAmount + deliveryPrice;
+
+    if (promocode) {
+        const code = await this.promocodeModel.findOne({ code: promocode }).exec();
+        if (code) {
+            withDelivery = withDelivery - withDelivery * (code.skidka / 100);
+            amount = amount - amount * (code.skidka / 100);
+            discountedAmount = discountedAmount - discountedAmount * (code.skidka / 100);
+        }
+    }
 
     return {
       amount: amount,

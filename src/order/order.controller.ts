@@ -38,7 +38,7 @@ export class OrderController {
 
   @Post("/amount")
   async calculateOrderAmount(@Body() req: CalculateOrderAmountRequest): Promise<OrderAmountDto> {
-    return this.orderService.calculateOrderAmount(req.positions);
+    return this.orderService.calculateOrderAmount(req.positions, req.promocode);
   }
 
   @Put("/complete/:id")
