@@ -58,12 +58,17 @@ export class OrderService {
       discountedAmount += discountedPrice;
     }
 
-    const orderAmount =
+    let orderAmount =
       amount >= freeDeliveryThreshold || dto.deliveryType !== DeliveryType.COURIER
         ? discountedAmount
         : discountedAmount + deliveryPrice;
 
-    
+    if (dto.promocode) {
+        const promocode = await this.promocodeModel.findOne({ code: dto.promocode }).exec();
+        if (promocode) {
+            orderAmount = orderAmount - orderAmount * (promocode.skidka / 100);
+        }
+    }
 
     const order: Order = {
       phoneNumber: dto.phoneNumber,
