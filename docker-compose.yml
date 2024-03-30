@@ -1,4 +1,4 @@
-version: '3.9'
+version: "3.9"
 services:
   app:
     labels:
@@ -33,9 +33,9 @@ services:
       - "8080"
     env_file:
       - .env
-#    volumes:
-#     - /var/lib/docker/volumes/online-shop-front_data-certs/_data:/etc/nginx/ssl
-    command: [ "npm", "run", "start" ]
+    #    volumes:
+    #     - /var/lib/docker/volumes/online-shop-front_data-certs/_data:/etc/nginx/ssl
+    command: ["npm", "run", "start"]
 
   mongo:
     user: root
@@ -48,7 +48,7 @@ services:
       MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASS}
     # сделать 'mkdir /home/mongodb_brick && touch /home/mongodb_brick/.dbshell && chown -R 999:999 /home/mongodb_brick'
     # нахуя? - не спрашивайте
-    volumes: 
+    volumes:
       - /home/mongodb_brick:/home/mongodb
       - /var/data/mongodb_brick:/data/db
     networks:
@@ -68,8 +68,6 @@ services:
       ME_CONFIG_MONGODB_URL: ${MONGO_DSN}
     networks:
       - traefik-public
-
-
 
 # Внешняя сеть для связи между контейнерами докера
 networks:
