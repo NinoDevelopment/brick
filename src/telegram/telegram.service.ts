@@ -10,37 +10,42 @@ interface ItemGetter {
 }
 @Injectable()
 export class TelegramAPIService {
-  constructor(private config: ConfigService, private readonly bot: TelegramService) {}
+  private readonly url: string;
+  constructor(private config: ConfigService, private readonly bot: TelegramService) {
+    this.url = this.config.getOrThrow("URL");
+  }
 
   testBot(): Promise<TelegramUser> {
     return this.bot.getMe().toPromise();
   }
 
   async sendCallmeRequest(req: CallMeDto): Promise<TelegramMessage[]> {
-    const chats = this.config.getOrThrow("TELEGRAM_CHAT_IDS").toString().split("|");
-    console.log("chats: ", chats)
+    const chats = this.config.getOrThrow("TELEGRAM_CHAT_IDS").toString().split(",");
+    console.log("chats: ", chats);
     return Promise.all(
       chats.map((chat_id: string) =>
-        this.bot.sendMessage({
+        this.bot
+          .sendMessage({
             chat_id: chat_id,
             text: `Запроc на связь от пользователя
 Имя: ${req.name}
 Компания: ${req.companyName}
 Email: ${req.email}
 Текст: ${req.text}`,
-          }).toPromise()
-      )
+          })
+          .toPromise(),
+      ),
     );
   }
 
   async sendOrder(order: Order, itemGetter: ItemGetter): Promise<TelegramMessage[]> {
-    const chats = this.config.getOrThrow("TELEGRAM_CHAT_IDS").toString().split("|");
+    const chats = this.config.getOrThrow("TELEGRAM_CHAT_IDS").toString().split(",");
 
     const positions = await Promise.all(
       order.positions.map(async (position) => {
         const item = await itemGetter.findById(position.itemId);
         if (item === null) return "";
-        return `*Товар:* [${item.name}](https://brick-nn.sbs/product/${position.itemId})
+        return `*Товар:* [${item.name}](https://${this.url}/product/${position.itemId})
 *Кол-во:* ${position.quantity} шт.
 
 `;
