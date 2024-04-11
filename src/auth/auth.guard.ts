@@ -4,17 +4,16 @@ import { Auth } from "./schema/auth";
 import { Model } from "mongoose";
 import { InjectModel } from "@nestjs/mongoose";
 import * as argon2 from "argon2";
-import * as crypto from "crypto";
+import { randomBytes } from 'crypto';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
   constructor(@InjectModel(Auth.name) private authModel: Model<Auth>) {}
 
   private hashingConfig = {
-    // based on OWASP cheat sheet recommendations (as of March, 2022)
     parallelism: 1,
-    memoryCost: 64000, // 64 mb
-    timeCost: 3, // number of itetations
+    memoryCost: 64000,
+    timeCost: 3,
   };
 
   canActivate(context: ExecutionContext): boolean | Promise<boolean> | Observable<boolean> {
@@ -22,7 +21,7 @@ export class AuthGuard implements CanActivate {
     return this.checkApiKey(request);
   }
 
-  private async checkApiKey(request: any): Promise<boolean> {
+  public async checkApiKey(request: any): Promise<boolean> {
     const headers = request.headers;
     const authHeader = headers["authorization"];
     if (!authHeader) throw new UnauthorizedException("не авторизован");
@@ -35,7 +34,16 @@ export class AuthGuard implements CanActivate {
     return false;
   }
 
-  private async verifyKeyWithHash(password: string, hash: string): Promise<boolean> {
+  public async verifyKeyWithHash(password: string, hash: string): Promise<boolean> {
     return argon2.verify(hash, password, this.hashingConfig);
+  }
+
+  public async generateApiKey(password: string): Promise<string> {
+    return argon2.hash(password, this.hashingConfig);
+  }
+
+  public async generateNewPassword(): Promise<string> {
+    const randomValue = randomBytes(16).toString('hex');
+    return `live_${randomValue}`;
   }
 }
