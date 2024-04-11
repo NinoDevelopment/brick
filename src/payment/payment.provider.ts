@@ -5,23 +5,24 @@ import { Model } from "mongoose";
 import { Cron, CronExpression } from "@nestjs/schedule";
 import { YooCheckout, ICreatePayment } from "@a2seven/yoo-checkout";
 import { OrderService } from "src/order/order.service";
-
-const RETURN_URL = "https://brick-nn.sbs/order/status";
+import { ConfigService } from "@nestjs/config";
 
 @Injectable()
 export class PaymentProvider {
   private readonly logger = new Logger(PaymentProvider.name);
-
+  private readonly url: string;
   private yooCheckout: YooCheckout;
 
   constructor(
     private orderService: OrderService,
     @InjectModel(Payment.name) private paymentModel: Model<Payment>,
+    private config: ConfigService,
   ) {
     this.yooCheckout = new YooCheckout({
       shopId: process.env["KASSA_SHOP_ID"]!,
       secretKey: process.env["KASSA_API_KEY"]!,
     });
+    this.url = this.config.getOrThrow("URL");
   }
 
   async create(orderId: string): Promise<Payment> {
@@ -39,7 +40,7 @@ export class PaymentProvider {
       },
       confirmation: {
         type: "redirect",
-        return_url: `${RETURN_URL}/${orderId}`,
+        return_url: `https://${this.url}/order/status/${orderId}`,
       },
       capture: true,
       description: `Платеж за заказ №${orderId} на сумму ${order.amount}`,

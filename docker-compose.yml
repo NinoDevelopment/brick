@@ -7,7 +7,7 @@ services:
       # Объявляем порт сервиса в докере для прослушки
       - traefik.http.services.app.loadbalancer.server.port=8080
       # Настройка маршрута для API с префиксом /api
-      - traefik.http.routers.app-api.rule=Host(`brick-nn.sbs`) && PathPrefix(`/api`)
+      - traefik.http.routers.app-api.rule=Host(`${URL}`) && PathPrefix(`/api`)
       # Удаление префикса /api из пути
       - traefik.http.middlewares.strip-api.stripprefix.prefixes=/api
       # Применение миддлвейра для удаления префикса
@@ -21,7 +21,7 @@ services:
       - traefik.http.middlewares.https-redirect.redirectscheme.permanent=true
       # Устанавливаем миддлвейр редиректа с HTTP на HTTPS
       - traefik.http.routers.app-api-http.middlewares=https-redirect
-      - traefik.http.routers.app-api-http.rule=Host(`brick-nn.sbs`) && PathPrefix(`/api`)
+      - traefik.http.routers.app-api-http.rule=Host(`${URL}`) && PathPrefix(`/api`)
       - traefik.http.routers.app-api-http.entrypoints=http
     networks:
       - traefik-public

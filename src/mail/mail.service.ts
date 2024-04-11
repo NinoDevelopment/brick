@@ -11,7 +11,10 @@ interface ItemGetter {
 
 @Injectable()
 export class MailService {
-  constructor(private mailerService: MailerService, private config: ConfigService) {}
+  private readonly url: string;
+  constructor(private mailerService: MailerService, private config: ConfigService) {
+    this.url = this.config.getOrThrow("URL");
+  }
 
   async sendOrder(order: Order, itemGetter: ItemGetter) {
     try {
@@ -22,7 +25,7 @@ export class MailService {
           return `
             <table>
               <tbody>
-                <tr><td>Товар:</td><td><a href="https://brick-nn.sbs//product/${position.itemId}">${
+                <tr><td>Товар:</td><td><a href="https://${this.url}/product/${position.itemId}">${
             item ? item.name : `Товар ${i + 1}`
           }</a></td></tr>
                 <tr><td>Кол-во:</td><td>${position.quantity} шт.</td></tr>

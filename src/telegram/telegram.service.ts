@@ -10,7 +10,10 @@ interface ItemGetter {
 }
 @Injectable()
 export class TelegramAPIService {
-  constructor(private config: ConfigService, private readonly bot: TelegramService) {}
+  private readonly url: string;
+  constructor(private config: ConfigService, private readonly bot: TelegramService) {
+    this.url = this.config.getOrThrow("URL");
+  }
 
   testBot(): Promise<TelegramUser> {
     return this.bot.getMe().toPromise();
@@ -42,7 +45,7 @@ Email: ${req.email}
       order.positions.map(async (position) => {
         const item = await itemGetter.findById(position.itemId);
         if (item === null) return "";
-        return `*Товар:* [${item.name}](https://brick-nn.sbs/product/${position.itemId})
+        return `*Товар:* [${item.name}](https://${this.url}/product/${position.itemId})
 *Кол-во:* ${position.quantity} шт.
 
 `;
