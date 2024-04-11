@@ -17,24 +17,26 @@ export class TelegramAPIService {
   }
 
   async sendCallmeRequest(req: CallMeDto): Promise<TelegramMessage[]> {
-    const chats = this.config.getOrThrow("TELEGRAM_CHAT_IDS").toString().split("|");
-    console.log("chats: ", chats)
+    const chats = this.config.getOrThrow("TELEGRAM_CHAT_IDS").toString().split(",");
+    console.log("chats: ", chats);
     return Promise.all(
       chats.map((chat_id: string) =>
-        this.bot.sendMessage({
+        this.bot
+          .sendMessage({
             chat_id: chat_id,
             text: `Запроc на связь от пользователя
 Имя: ${req.name}
 Компания: ${req.companyName}
 Email: ${req.email}
 Текст: ${req.text}`,
-          }).toPromise()
-      )
+          })
+          .toPromise(),
+      ),
     );
   }
 
   async sendOrder(order: Order, itemGetter: ItemGetter): Promise<TelegramMessage[]> {
-    const chats = this.config.getOrThrow("TELEGRAM_CHAT_IDS").toString().split("|");
+    const chats = this.config.getOrThrow("TELEGRAM_CHAT_IDS").toString().split(",");
 
     const positions = await Promise.all(
       order.positions.map(async (position) => {
