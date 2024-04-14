@@ -86,6 +86,9 @@ export type OrderDocument = HydratedDocument<Order>;
 
 @Schema()
 export class Order {
+  @Prop()
+  orderId: string;
+
   @Prop({ required: true })
   phoneNumber: string;
 
