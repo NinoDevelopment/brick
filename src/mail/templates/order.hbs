@@ -1,27 +1,89 @@
-<div>
-  <div>
-    <h5>Информация о заказе:</h5>
-    <table>
-      <tbody>
-        <tr><td>Дата:</td><td>{{orderDate}}</td></tr>
-        <tr><td>Сумма:</td><td>{{orderSum}}</td></tr>
-        <tr><td>Доставка:</td><td>{{deliveryType}}</td></tr>
-        <tr><td>Адрес:</td><td>{{address}}</td></tr>
-        <tr><td>Тип оплаты:</td><td>{{paymentType}}</td></tr>
-        <tr><td>Статус заказа:</td><td>{{orderStatus}}</td></tr>
-      </tbody>
-    </table>
-    <h5>Информация о покупателе:</h5>
-    <table>
-      <tbody>
-        <tr><td>Имя:</td><td>{{buyerName}}</td></tr>
-        <tr><td>Телефон:</td><td>{{buyerPhone}}</td></tr>
-        <tr><td>Комментарий:</td><td>{{comment}}</td></tr>
-      </tbody>
-    </table>
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Информация о заказе</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      line-height: 1.6;
+      margin: 0;
+      padding: 0;
+      background-color: #f7f7f7;
+    }
+
+    .container {
+      max-width: 600px;
+      margin: 20px auto;
+      padding: 20px;
+      background-color: #ffffff;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    table td, table th {
+      border: 1px solid #dddddd;
+      padding: 8px;
+      text-align: left;
+    }
+
+    table th {
+      background-color: #f2f2f2;
+    }
+
+    h5 {
+      margin-top: 0;
+    }
+
+    .footer {
+      margin-top: 20px;
+      font-size: 12px;
+      color: #666666;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div>
+      <h3>Информация о заказе:</h3>
+      <table>
+        <tbody>
+          <tr><td>Номер заказа:</td><td>{{ orderId }}</td></tr>
+          <tr><td>Дата:</td><td>{{ orderDate }}</td></tr>
+          <tr><td>Сумма:</td><td>{{ orderSum }}</td></tr>
+          <tr><td>Доставка:</td><td>{{ deliveryType }}</td></tr>
+          <tr><td>Адрес:</td><td>{{ address }}</td></tr>
+          <tr><td>Тип оплаты:</td><td>{{ paymentType }}</td></tr>
+          <tr><td>Статус заказа:</td><td>{{ orderStatus }}</td></tr>
+        </tbody>
+      </table>
+      <h3>Информация о покупателе:</h3>
+      <table>
+        <tbody>
+          <tr><td>Имя:</td><td>{{ buyerName }}</td></tr>
+          <tr><td>Телефон:</td><td>{{ buyerPhone }}</td></tr>
+          <tr><td>Комментарий:</td><td>{{ comment }}</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div>
+      <h3>Товары:</h3>
+      <ul>
+        {{#each positions}}
+          <li>{{ this }}</li>
+        {{/each}}
+      </ul>
+    </div>
+    <div class="footer">
+      <p>С уважением,<br>КЗК</p>
+    </div>
   </div>
-  <div>
-    <h5>Товары:</h5>
-    {{{positions}}}
-  </div>
-</div>
+</body>
+</html>
