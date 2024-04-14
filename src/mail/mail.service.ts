@@ -50,6 +50,7 @@ export class MailService {
         subject: "Новый заказ",
         template: "./order",
         context: {
+          orderId: order.orderId,
           orderDate: this.getMoscowDateTimeString(order.createdAt),
           orderSum: `${order.amount}₽`,
           deliveryType: order.deliveryType === DeliveryType.COURIER ? "Курьер" : "Самовывоз",
