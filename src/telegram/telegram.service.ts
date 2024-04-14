@@ -61,6 +61,7 @@ Email: ${req.email}
         : order.shopAddress;
 
     const params = {
+      orderId: order.orderId,
       orderDate: this.getMoscowDateTimeString(order.createdAt),
       orderSum: `${order.amount}₽`,
       deliveryType: order.deliveryType === DeliveryType.COURIER ? "Курьер" : "Самовывоз",
@@ -80,6 +81,7 @@ Email: ${req.email}
             chat_id: chat_id,
             disable_web_page_preview: true,
             text: `*Информация о заказе:*
+*Номер заказа:* ${params.orderId}
 *Дата:* ${params.orderDate}
 *Сумма:* ${params.orderSum}
 *Доставка:* ${params.deliveryType}
