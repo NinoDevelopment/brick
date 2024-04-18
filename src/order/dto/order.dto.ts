@@ -21,24 +21,39 @@ import { ApiProperty } from "@nestjs/swagger";
 export class SchetInfoDto {
   @ApiProperty()
   @IsString()
+  @IsOptional()
+  companyName: string;
+
+  @ApiProperty()
+  @IsString()
+  @IsOptional()
+  companyAddress: string;
+
+  @ApiProperty()
+  @IsString()
   @IsNotEmpty()
   bankName: string;
+
   @ApiProperty()
   @IsString()
   @IsNotEmpty()
   bic: string;
+
   @ApiProperty()
   @IsString()
   @IsNotEmpty()
   correspondentAccount: string;
+
   @ApiProperty()
   @IsString()
   @IsNotEmpty()
   receiverAccount: string;
+
   @ApiProperty()
   @IsString()
   @IsNotEmpty()
   inn: string;
+
   @ApiProperty()
   @IsString()
   @IsNotEmpty()
@@ -92,6 +107,12 @@ export class AddressInfo {
   @IsString()
   @Max(300)
   addressName?: string;
+
+  @ApiProperty()
+  @IsNotEmpty()
+  @IsString()
+  @Max(300)
+  city: string;
 
   @ApiProperty()
   @IsOptional()
