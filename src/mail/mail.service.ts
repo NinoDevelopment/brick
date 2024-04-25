@@ -30,6 +30,7 @@ interface PreparedOrder {
   buyerPhone: string;
   buyerEmail: string;
   comment: string;
+  url: string;
 }
 
 interface Position {
@@ -93,6 +94,7 @@ export class MailService {
       buyerPhone: order.phoneNumber,
       buyerEmail: order.email ? order.email : "",
       comment: order.comment ? order.comment : "Комментарий отсутствует",
+      url: process.env.URL ? process.env.URL : "kzk.ooo"
     };
     // await this.generatePDFWithText(preparedOrder, order.positions); для тестов
     return preparedOrder;
@@ -107,7 +109,7 @@ export class MailService {
           return {
             itemId: position.itemId,
             name: item?.name || `Товар ${i + 1}`,
-            price: item?.price || 0,
+            price: position.price || 0,
             quantity: position.quantity,
           };
         }),

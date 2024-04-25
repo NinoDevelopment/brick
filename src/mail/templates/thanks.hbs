@@ -33,9 +33,9 @@
             {{#each positions}}
               <tr>
                 <td><a
-                    href="https://${process.env.URL}/product/{{this.itemId}}"
+                    href="https://{{url}}/product/{{this.itemId}}"
                   >{{this.name}}</a></td>
-                <td>{{this.price}}</td>
+                <td>{{this.price}}₽</td>
                 <td>{{this.quantity}}</td>
               </tr>
             {{/each}}
