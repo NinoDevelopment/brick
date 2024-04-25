@@ -87,7 +87,7 @@ export class MailService {
       buyerEmail: order.email ? order.email : "",
       comment: order.comment ? order.comment : "Комментарий отсутствует",
     };
-    await this.generatePDFWithText(preparedOrder, order.positions);
+    // await this.generatePDFWithText(preparedOrder, order.positions); для тестов
     return preparedOrder;
   }
 
@@ -97,15 +97,14 @@ export class MailService {
       const positions = await Promise.all(
         order.positions.map(async (position, i) => {
           const item = await itemGetter.findById(position.itemId);
-          const itemName = item ? item.name : `Товар ${i + 1}`;
-          const preorderInfo =
-            item && !item.available ? `<tr><td>Предзаказ:</td><td>Да</td></tr>` : "";
           return `
             <table>
               <tbody>
-                <tr><td>Товар:</td><td><a href="https://${this.url}/product/${position.itemId}">${itemName}</a></td></tr>
+                <tr><td>Товар:</td><td><a href="https://${this.url}/product/${position.itemId}">${
+            item ? item.name : `Товар ${i + 1}`
+          }</a></td></tr>
                 <tr><td>Кол-во:</td><td>${position.quantity} шт.</td></tr>
-                ${preorderInfo}
+                ${item && !item.available ? `<tr><td>Предзаказ:</td><td>Да</td></tr>` : ""}
               </tbody>
             </table>
             <br>`;
@@ -116,7 +115,30 @@ export class MailService {
         positions,
         ...preparedOrder,
       };
-
+      const attachments = [];
+      if (order.paymentType === PaymentType.SCHET) {
+        try {
+          await this.generatePDFWithText(preparedOrder, order.positions);
+          attachments.push({
+            filename: "order.pdf",
+            path: outputPath,
+            contentType: "application/pdf",
+          });
+        } catch (error) {
+          console.error("Error generating PDF:", error);
+        }
+      }
+      console.log("sending email to customer");
+      await this.mailerService.sendMail({
+        to: preparedOrder.buyerEmail,
+        subject: "Новый заказ",
+        template: "./thanks",
+        context: {
+          ...orderData,
+        },
+        attachments,
+      });
+      console.log("sending email to admin");
       await this.mailerService.sendMail({
         to: this.config.getOrThrow("ADMIN_MAIL").toString().split("|"),
         subject: "Новый заказ",
@@ -124,16 +146,10 @@ export class MailService {
         context: {
           ...orderData,
         },
-        attachments: [
-          {
-            filename: "order.pdf",
-            path: outputPath,
-            contentType: "application/pdf",
-          },
-        ],
+        attachments,
       });
 
-      fs.unlinkSync(outputPath);
+      if (fs.existsSync(outputPath)) fs.unlinkSync(outputPath);
     } catch (error) {
       console.error("Ошибка при отправке письма:", error.message);
       throw new Error("Ошибка при отправке письма");
@@ -298,7 +314,7 @@ export class MailService {
 
       console.log("PDF generated successfully");
     } catch (error) {
-      console.error("Error generating PDF:", error);
+      throw new Error();
     }
   }
 
