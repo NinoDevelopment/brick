@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Благодарим за ваш заказ</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      line-height: 1.6;
+      margin: 0;
+      padding: 0;
+      background-color: #f7f7f7;
+    }
+
+    .container {
+      max-width: 600px;
+      margin: 20px auto;
+      padding: 20px;
+      background-color: #ffffff;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    h3 {
+      margin-top: 0;
+    }
+
+    .footer {
+      margin-top: 20px;
+      font-size: 12px;
+      color: #666666;
+    }
+
+    .order-details {
+      margin-bottom: 20px;
+    }
+
+    .order-details table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 10px;
+    }
+
+    .order-details th, .order-details td {
+      padding: 8px;
+      border-bottom: 1px solid #ddd;
+    }
+
+    .order-details th {
+      background-color: #f2f2f2;
+      text-align: left;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h3>Благодарим за ваш заказ!</h3>
+    <p>Мы получили ваш заказ №{{ orderId }} и свяжемся с вами в ближайшее время.</p>
+    
+    <div class="order-details">
+      <h4>Информация о заказе:</h4>
+      <table>
+        <thead>
+          <tr>
+            <th>Товар</th>
+            <th>Количество</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{#each positions}}
+            <tr>
+              <td>{{ this.name }}</td>
+              <td>{{ this.quantity }}</td>
+            </tr>
+          {{/each}}
+        </tbody>
+      </table>
+      <p>Общая сумма: {{ orderSum }}</p>
+    </div>
+
+    <div class="footer">
+      <p>С уважением,<br>Команда КЗК</p>
+    </div>
+  </div>
+</body>
+</html>
