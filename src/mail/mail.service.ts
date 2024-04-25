@@ -30,7 +30,6 @@ interface PreparedOrder {
   buyerPhone: string;
   buyerEmail: string;
   comment: string;
-  url: string;
 }
 
 interface Position {
@@ -38,6 +37,7 @@ interface Position {
   name: string;
   price: number;
   quantity: number;
+  url: string;
 }
 
 @Injectable()
@@ -94,7 +94,6 @@ export class MailService {
       buyerPhone: order.phoneNumber,
       buyerEmail: order.email ? order.email : "",
       comment: order.comment ? order.comment : "Комментарий отсутствует",
-      url: process.env.URL ? process.env.URL : "kzk.ooo"
     };
     // await this.generatePDFWithText(preparedOrder, order.positions); для тестов
     return preparedOrder;
@@ -111,6 +110,7 @@ export class MailService {
             name: item?.name || `Товар ${i + 1}`,
             price: position.price || 0,
             quantity: position.quantity,
+            url: this.url ? `https://${this.url}/product/${position.itemId}`: ''
           };
         }),
       );
