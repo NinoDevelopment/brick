@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import mongoose, { HydratedDocument } from "mongoose";
-import { Item } from "src/item/schema/item";
+import { Item } from '../../item/schema/item';
 
 export type OrderPositionDocument = HydratedDocument<OrderPosition>;
 
@@ -19,6 +19,10 @@ export const PromocodeSchema = SchemaFactory.createForClass(Promocode);
 
 @Schema()
 export class SchetInfo {
+  @Prop()
+  companyName: string;
+  @Prop()
+  companyAddress: string;
   @Prop()
   bankName: string;
   @Prop()
@@ -65,6 +69,9 @@ export class Address {
 
   @Prop()
   addressName?: string;
+
+  @Prop()
+  city: string;
 
   @Prop()
   flat?: string;
