@@ -32,6 +32,13 @@ interface PreparedOrder {
   comment: string;
 }
 
+interface Position {
+  itemId: string;
+  name: string;
+  price: number;
+  quantity: number;
+}
+
 @Injectable()
 export class MailService {
   private readonly url: string;
@@ -94,22 +101,18 @@ export class MailService {
   async sendOrder(order: Order, itemGetter: ItemGetter) {
     try {
       console.log("try sendOrder");
-      const positions = await Promise.all(
+      const positions: Position[] = await Promise.all(
         order.positions.map(async (position, i) => {
           const item = await itemGetter.findById(position.itemId);
-          return `
-            <table>
-              <tbody>
-                <tr><td>Товар:</td><td><a href="https://${this.url}/product/${position.itemId}">${
-            item ? item.name : `Товар ${i + 1}`
-          }</a></td></tr>
-                <tr><td>Кол-во:</td><td>${position.quantity} шт.</td></tr>
-                ${item && !item.available ? `<tr><td>Предзаказ:</td><td>Да</td></tr>` : ""}
-              </tbody>
-            </table>
-            <br>`;
+          return {
+            itemId: position.itemId,
+            name: item?.name || `Товар ${i + 1}`,
+            price: item?.price || 0,
+            quantity: position.quantity,
+          };
         }),
       );
+
       const preparedOrder = await this.prepareOrder(order);
       const orderData = {
         positions,
@@ -118,7 +121,7 @@ export class MailService {
       const attachments = [];
       if (order.paymentType === PaymentType.SCHET) {
         try {
-          await this.generatePDFWithText(preparedOrder, order.positions);
+          await this.generatePDFWithText(preparedOrder, positions);
           attachments.push({
             filename: "order.pdf",
             path: outputPath,
@@ -172,10 +175,7 @@ export class MailService {
     return date.toLocaleString("ru-RU", options);
   }
 
-  public async generatePDFWithText(
-    order: PreparedOrder,
-    positions: OrderPosition[],
-  ): Promise<void> {
+  public async generatePDFWithText(order: PreparedOrder, positions: Position[]): Promise<void> {
     try {
       if (!fs.existsSync(templatePath) || !fs.existsSync(fontPath)) {
         throw new Error("Template or font file not found");
@@ -268,7 +268,7 @@ export class MailService {
       });
 
       for (let i = 0; i <= positions.length - 1; i++) {
-        this.drawWrappedText(page, positions[i].itemId, {
+        this.drawWrappedText(page, positions[i].name, {
           x: 70,
           y: 595 - i * 10.5,
           maxWidth: 450,

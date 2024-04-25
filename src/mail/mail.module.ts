@@ -25,7 +25,7 @@ import { MailService } from "./mail.service";
           },
         },
         defaults: {
-          from: `"No Reply" <${config.getOrThrow("MAIL_FROM")}>`,
+          from: `"KZK" <${config.getOrThrow("MAIL_FROM")}>`,
         },
         template: {
           dir: join(__dirname, "templates"),
