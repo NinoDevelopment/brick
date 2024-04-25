@@ -43,7 +43,7 @@
         <h3>Товары:</h3>
         {{#each positions}}
           <p>Название товара:
-            <a href="https://{{url}}/product/{{this.itemId}}">{{this.name}}</a>
+            <a href="https://{{this.url}}/product/{{this.itemId}}">{{this.name}}</a>
           </p>
           <p>Цена: {{this.price}}₽</p>
           <p>Количество: {{this.quantity}}</p>
