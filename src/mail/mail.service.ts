@@ -37,7 +37,6 @@ interface Position {
   name: string;
   price: number;
   quantity: number;
-  url: string;
 }
 
 @Injectable()
@@ -110,14 +109,17 @@ export class MailService {
             name: item?.name || `Товар ${i + 1}`,
             price: position.price || 0,
             quantity: position.quantity,
-            url: this.url ? `https://${this.url}/product/${position.itemId}`: ''
           };
         }),
       );
 
       const preparedOrder = await this.prepareOrder(order);
+      const url = this.url ? `https://${this.url}` : "";
       const orderData = {
-        positions,
+        positions: positions.map((position) => ({
+          ...position,
+          url: url ? `${url}/product/${position.itemId}` : "",
+        })),
         ...preparedOrder,
       };
       const attachments = [];
