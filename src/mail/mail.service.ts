@@ -233,7 +233,7 @@ export class MailService {
       });
 
       const totalCostSum = totalCosts.reduce((sum, position) => sum + position.totalCost, 0);
-      const totalCostSumNDS = totalCostSum * 0.2;
+      const totalCostSumNDS = totalCostSum * 20 / 120;
       const formattedTotalCostSum = totalCostSum.toLocaleString("ru-RU", {
         style: "currency",
         currency: "RUB",
