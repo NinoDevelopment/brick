@@ -104,10 +104,13 @@ export class MailService {
       const positions: Position[] = await Promise.all(
         order.positions.map(async (position, i) => {
           const item = await itemGetter.findById(position.itemId);
+          const discountPercent = item?.discount || 0;
+          const discount = position.price * (discountPercent / 100);
+          const discountedPrice = position.price - discount;
           return {
             itemId: position.itemId,
             name: item?.name || `Товар ${i + 1}`,
-            price: position.price || 0,
+            price: discountedPrice >= 0 ? discountedPrice : 0,
             quantity: position.quantity,
           };
         }),
