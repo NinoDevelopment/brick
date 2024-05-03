@@ -10,6 +10,7 @@ const fontkit = require("fontkit");
 const path = require("path");
 
 const templatePath = path.join(__dirname, "templates", "template.pdf");
+import { convert as convertNumberToWordsRu } from 'number-to-words-ru'
 const fontPath = path.join(__dirname, "templates", "DejaVuSans.ttf");
 const outputPath = path.join(__dirname, "templates", "order.pdf");
 
@@ -237,6 +238,7 @@ export class MailService {
 
       const totalCostSum = totalCosts.reduce((sum, position) => sum + position.totalCost, 0);
       const totalCostSumNDS = totalCostSum * 20 / 120;
+      const totalCostSumWord = convertNumberToWordsRu(totalCostSum);
       const formattedTotalCostSum = totalCostSum.toLocaleString("ru-RU", {
         style: "currency",
         currency: "RUB",
@@ -269,6 +271,13 @@ export class MailService {
       this.drawWrappedText(page, formattedTotalCostSum, {
         x: 450,
         y: 481,
+        maxWidth: 450,
+        lineHeight: 9,
+        font: dejavuSansFont,
+      });
+      this.drawWrappedText(page, totalCostSumWord, {
+        x: 35,
+        y: 458.5,
         maxWidth: 450,
         lineHeight: 9,
         font: dejavuSansFont,
