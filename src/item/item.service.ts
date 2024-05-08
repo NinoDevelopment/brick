@@ -56,6 +56,7 @@ export class ItemService {
     item.description = updateItemDto.description;
     item.images = updateItemDto.images;
     item.discount = updateItemDto.discount;
+    item.pack = updateItemDto.pack;
     item.available = updateItemDto.available;
     item.isRecommendation = updateItemDto.isRecommendation;
     item.show = updateItemDto.show;

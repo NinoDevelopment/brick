@@ -33,6 +33,9 @@ export class CreateItemDto {
   @Min(0)
   discount: number;
 
+  @Min(0)
+  pack: number;
+
   @IsPositive()
   price: number;
 

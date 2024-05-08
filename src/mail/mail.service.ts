@@ -10,6 +10,7 @@ const fontkit = require("fontkit");
 const path = require("path");
 
 const templatePath = path.join(__dirname, "templates", "template.pdf");
+import { convert as convertNumberToWordsRu } from 'number-to-words-ru'
 const fontPath = path.join(__dirname, "templates", "DejaVuSans.ttf");
 const outputPath = path.join(__dirname, "templates", "order.pdf");
 
@@ -37,7 +38,6 @@ interface Position {
   name: string;
   price: number;
   quantity: number;
-  url: string;
 }
 
 @Injectable()
@@ -105,19 +105,25 @@ export class MailService {
       const positions: Position[] = await Promise.all(
         order.positions.map(async (position, i) => {
           const item = await itemGetter.findById(position.itemId);
+          const discountPercent = item?.discount || 0;
+          const discount = position.price * (discountPercent / 100);
+          const discountedPrice = position.price - discount;
           return {
             itemId: position.itemId,
             name: item?.name || `Товар ${i + 1}`,
-            price: position.price || 0,
+            price: discountedPrice >= 0 ? discountedPrice : 0,
             quantity: position.quantity,
-            url: this.url ? `https://${this.url}/product/${position.itemId}`: ''
           };
         }),
       );
 
       const preparedOrder = await this.prepareOrder(order);
+      const url = this.url ? `https://${this.url}` : "";
       const orderData = {
-        positions,
+        positions: positions.map((position) => ({
+          ...position,
+          url: url ? `${url}/product/${position.itemId}` : "",
+        })),
         ...preparedOrder,
       };
       const attachments = [];
@@ -231,7 +237,8 @@ export class MailService {
       });
 
       const totalCostSum = totalCosts.reduce((sum, position) => sum + position.totalCost, 0);
-      const totalCostSumNDS = totalCostSum * 0.2;
+      const totalCostSumNDS = totalCostSum * 20 / 120;
+      const totalCostSumWord = convertNumberToWordsRu(totalCostSum);
       const formattedTotalCostSum = totalCostSum.toLocaleString("ru-RU", {
         style: "currency",
         currency: "RUB",
@@ -264,6 +271,13 @@ export class MailService {
       this.drawWrappedText(page, formattedTotalCostSum, {
         x: 450,
         y: 481,
+        maxWidth: 450,
+        lineHeight: 9,
+        font: dejavuSansFont,
+      });
+      this.drawWrappedText(page, totalCostSumWord, {
+        x: 35,
+        y: 458.5,
         maxWidth: 450,
         lineHeight: 9,
         font: dejavuSansFont,

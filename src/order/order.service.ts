@@ -70,14 +70,8 @@ export class OrderService {
         }
     }
 
-    function generateOrderId() {
-      const currentYear = new Date().getFullYear();
-      const randomDigits = Math.floor(100000 + Math.random() * 900000);
-      return `${currentYear}${randomDigits}`;
-    }
-
     const order: Order = {
-      orderId: generateOrderId(),
+      orderId: await this.generateOrderId(),
       phoneNumber: dto.phoneNumber,
       email: dto.email,
       fullName: dto.fullName,
@@ -167,5 +161,21 @@ export class OrderService {
     if (order == null) throw new NotFoundException(`заказ ${orderId} не найден`);
     order.paid = val;
     return order.save();
+  }
+
+  private async generateOrderId(): Promise<string> {
+    const currentYear = new Date().getFullYear().toString();
+    const lastOrder = await this.orderModel.findOne({}, {}, { sort: { 'createdAt': -1 } }).exec();
+    if (lastOrder) {
+      const lastOrderId = lastOrder.orderId;
+      const lastOrderYear = lastOrderId.slice(0, 4);
+      if (lastOrderYear === currentYear) {
+        const lastOrderNumber = parseInt(lastOrderId.slice(4), 10);
+        const nextOrderNumber = lastOrderNumber + 1;
+        const paddedOrderNumber = nextOrderNumber.toString().padStart(6, '0');
+        return currentYear + paddedOrderNumber;
+      }
+    }
+    return currentYear + '000001';
   }
 }

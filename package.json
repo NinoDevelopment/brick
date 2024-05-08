@@ -36,6 +36,7 @@
     "fontkit": "^2.0.2",
     "mongoose": "^7.3.3",
     "nestjs-telegram": "^1.2.0",
+    "number-to-words-ru": "^2.4.1",
     "pdf-lib": "1.17.1",
     "reflect-metadata": "^0.1.13"
   },

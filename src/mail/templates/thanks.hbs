@@ -32,16 +32,14 @@
           <tbody>
             {{#each positions}}
               <tr>
-                <td><a
-                    href="https://{{this.url}}/product/{{this.itemId}}"
-                  >{{this.name}}</a></td>
+                <td><a href="{{this.url}}">{{this.name}}</a></td>
                 <td>{{this.price}}₽</td>
                 <td>{{this.quantity}}</td>
               </tr>
             {{/each}}
           </tbody>
         </table>
-        <p>Общая сумма: {{orderSum}}</p>
+        <p>Общая сумма: <strong>{{orderSum}}</strong></p>
       </div>
 
       <div class="footer">

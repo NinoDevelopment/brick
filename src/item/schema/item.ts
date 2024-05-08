@@ -24,6 +24,9 @@ export class Item {
   @Prop({ default: 0 })
   discount: number;
 
+  @Prop({ default: 400 })
+  pack: number;
+
   @Prop({ required: true })
   price: number;
 
