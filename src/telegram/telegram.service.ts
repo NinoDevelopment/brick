@@ -21,7 +21,6 @@ export class TelegramAPIService {
 
   async sendCallmeRequest(req: CallMeDto): Promise<TelegramMessage[]> {
     const chats = this.config.getOrThrow("TELEGRAM_CHAT_IDS").toString().split(",");
-    console.log("chats: ", chats);
     return Promise.all(
       chats.map((chat_id: string) =>
         this.bot
@@ -53,23 +52,43 @@ Email: ${req.email}
     );
     const oa = order.address;
 
-    const address =
+    const deliveryAddress =
       order.deliveryType === DeliveryType.COURIER
-        ? `${oa.address}${oa.entrance ? ` подъезд:${oa.entrance}` : ""}${
-            oa.floor ? ` этаж:${oa.floor}` : ""
-          }${oa.flat ? ` кв:${oa.flat}` : ""}${oa.intercom ? ` домофон:${oa.intercom}` : ""}`
+        ? `${oa.city}, ${oa.address}` +
+          (oa.entrance ? `, подъезд:${oa.entrance}` : "") +
+          (oa.floor ? `, этаж:${oa.floor}` : "") +
+          (oa.flat ? `, кв:${oa.flat}` : "") +
+          (oa.intercom ? `, домофон:${oa.intercom}` : "") +
+          (oa.commentAddress ? `, ${oa.commentAddress}` : "")
         : order.shopAddress;
+
+    let paymentType: string;
+    switch (order.paymentType) {
+      case PaymentType.CASH:
+        paymentType = "Наличными";
+        break;
+      case PaymentType.ONLINE:
+        paymentType = "Картой онлайн";
+        break;
+      case PaymentType.SCHET:
+        paymentType = "Выставлен счет";
+        break;
+      default:
+        paymentType = "";
+        break;
+    }
 
     const params = {
       orderId: order.orderId,
       orderDate: this.getMoscowDateTimeString(order.createdAt),
       orderSum: `${order.amount}₽`,
       deliveryType: order.deliveryType === DeliveryType.COURIER ? "Курьер" : "Самовывоз",
-      address: address,
-      paymentType: order.paymentType === PaymentType.CASH ? "Наличными" : "Картой онлайн",
+      address: deliveryAddress,
+      paymentType,
       orderStatus: order.completed ? "Завершен" : "Не завершен",
       buyerName: order.fullName,
       buyerPhone: order.phoneNumber,
+      buyerEmail: order.email ? order.email : "",
       comment: order.comment ? order.comment : "Комментарий отсутствует",
       positions: positions.reduce((acc, curr) => acc + curr, ""),
     };
@@ -85,13 +104,14 @@ Email: ${req.email}
 *Дата:* ${params.orderDate}
 *Сумма:* ${params.orderSum}
 *Доставка:* ${params.deliveryType}
-*Адрес:* ${address}
+*Адрес:* ${deliveryAddress}
 *Тип оплаты:* ${params.paymentType}
 *Статус заказа:* ${params.orderStatus}
 
 *Информация о покупателе:*
 *Имя:* ${params.buyerName}
 *Телефон:* ${params.buyerPhone}
+*Email:* ${params.buyerEmail}
 *Комментарий:* ${params.comment}
 
 *Товары:*
