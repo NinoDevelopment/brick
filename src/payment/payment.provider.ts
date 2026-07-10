@@ -1,4 +1,10 @@
-import { BadRequestException, Injectable, Logger, NotFoundException } from "@nestjs/common";
+import {
+  BadRequestException,
+  Injectable,
+  InternalServerErrorException,
+  Logger,
+  NotFoundException,
+} from "@nestjs/common";
 import { Payment, PaymentDocument, PaymentStatus } from "./schema/payment";
 import { InjectModel } from "@nestjs/mongoose";
 import { Model } from "mongoose";
@@ -18,11 +24,13 @@ export class PaymentProvider {
     @InjectModel(Payment.name) private paymentModel: Model<Payment>,
     private config: ConfigService,
   ) {
-    this.yooCheckout = new YooCheckout({
-      shopId: process.env["KASSA_SHOP_ID"]!,
-      secretKey: process.env["KASSA_API_KEY"]!,
-    });
-    this.url = this.config.getOrThrow("URL");
+    const shopId = this.unquote(process.env["KASSA_SHOP_ID"]);
+    const secretKey = this.unquote(process.env["KASSA_API_KEY"]);
+    if (!shopId || !secretKey) {
+      throw new Error("KASSA_SHOP_ID / KASSA_API_KEY не заданы");
+    }
+    this.yooCheckout = new YooCheckout({ shopId, secretKey });
+    this.url = this.unquote(this.config.getOrThrow("URL"));
   }
 
   async create(orderId: string): Promise<Payment> {
@@ -35,7 +43,7 @@ export class PaymentProvider {
 
     const createPayload: ICreatePayment = {
       amount: {
-        value: order.amount.toString(),
+        value: Number(order.amount).toFixed(2),
         currency: "RUB",
       },
       confirmation: {
@@ -43,12 +51,22 @@ export class PaymentProvider {
         return_url: `https://${this.url}/order/status/${orderId}`,
       },
       capture: true,
-      description: `Платеж за заказ №${orderId} на сумму ${order.amount}`,
+      description: `Платеж за заказ №${order.orderId} на сумму ${order.amount}`,
     };
 
-    const yooPayment = await this.yooCheckout.createPayment(createPayload);
+    let yooPayment;
+    try {
+      yooPayment = await this.yooCheckout.createPayment(createPayload);
+    } catch (error) {
+      const yooError = this.extractYooError(error);
+      this.logger.error(`YooKassa createPayment failed: ${JSON.stringify(yooError)}`);
+      throw new InternalServerErrorException({
+        message: "Не удалось создать платёж в ЮKassa",
+        yooError,
+      });
+    }
 
-    console.log(yooPayment);
+    this.logger.log(`YooKassa payment created: ${yooPayment.id}`);
 
     const paymentToCreate: Payment = {
       orderId: orderId,
@@ -62,6 +80,50 @@ export class PaymentProvider {
 
     const payment = new this.paymentModel(paymentToCreate);
     return payment.save();
+  }
+
+  private unquote(value?: string | null): string {
+    if (!value) return "";
+    const trimmed = value.trim();
+    if (
+      (trimmed.startsWith('"') && trimmed.endsWith('"')) ||
+      (trimmed.startsWith("'") && trimmed.endsWith("'"))
+    ) {
+      return trimmed.slice(1, -1);
+    }
+    return trimmed;
+  }
+
+  private extractYooError(error: unknown): Record<string, unknown> {
+    if (!error || typeof error !== "object") {
+      return { raw: String(error) };
+    }
+    const err = error as {
+      response?: { status?: number; data?: unknown };
+      message?: string;
+      code?: string;
+      description?: string;
+      type?: string;
+      id?: string;
+      parameter?: string;
+    };
+    const data = err.response?.data;
+    if (data && typeof data === "object") {
+      return {
+        httpStatus: err.response?.status,
+        ...(data as Record<string, unknown>),
+      };
+    }
+    return {
+      httpStatus: err.response?.status,
+      message: err.message,
+      code: err.code,
+      description: err.description,
+      type: err.type,
+      id: err.id,
+      parameter: err.parameter,
+      data,
+    };
   }
 
   @Cron(CronExpression.EVERY_5_SECONDS)

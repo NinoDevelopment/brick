@@ -162,7 +162,11 @@ export class MailService {
 
       if (fs.existsSync(outputPath)) fs.unlinkSync(outputPath);
     } catch (error) {
-      console.error("Ошибка при отправке письма:", error.message);
+      const details =
+        error instanceof Error
+          ? { message: error.message, stack: error.stack }
+          : error;
+      console.error("Ошибка при отправке письма:", details);
       throw new Error("Ошибка при отправке письма");
     }
   }
@@ -189,11 +193,11 @@ export class MailService {
         throw new Error("Template or font file not found");
       }
 
-      const templateBytes = fs.readFileSync(templatePath);
+      const templateBytes = new Uint8Array(fs.readFileSync(templatePath));
       const pdfDoc = await PDFDocument.load(templateBytes);
       pdfDoc.registerFontkit(fontkit);
 
-      const fontBytes = fs.readFileSync(fontPath);
+      const fontBytes = new Uint8Array(fs.readFileSync(fontPath));
       const dejavuSansFont = await pdfDoc.embedFont(fontBytes);
       const page = pdfDoc.getPages()[0];
 

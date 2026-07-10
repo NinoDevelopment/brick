@@ -12,15 +12,30 @@ interface ItemGetter {
 export class TelegramAPIService {
   private readonly url: string;
   constructor(private config: ConfigService, private readonly bot: TelegramService) {
-    this.url = this.config.getOrThrow("URL");
+    const rawUrl = this.config.getOrThrow("URL").toString().trim();
+    this.url =
+      (rawUrl.startsWith('"') && rawUrl.endsWith('"')) ||
+      (rawUrl.startsWith("'") && rawUrl.endsWith("'"))
+        ? rawUrl.slice(1, -1)
+        : rawUrl;
   }
 
   testBot(): Promise<TelegramUser> {
     return this.bot.getMe().toPromise();
   }
 
+  private chatIds(): string[] {
+    return this.config
+      .getOrThrow("TELEGRAM_CHAT_IDS")
+      .toString()
+      .replace(/^["']|["']$/g, "")
+      .split(",")
+      .map((id: string) => id.trim())
+      .filter(Boolean);
+  }
+
   async sendCallmeRequest(req: CallMeDto): Promise<TelegramMessage[]> {
-    const chats = this.config.getOrThrow("TELEGRAM_CHAT_IDS").toString().split(",");
+    const chats = this.chatIds();
     return Promise.all(
       chats.map((chat_id: string) =>
         this.bot
@@ -38,7 +53,7 @@ Email: ${req.email}
   }
 
   async sendOrder(order: Order, itemGetter: ItemGetter): Promise<TelegramMessage[]> {
-    const chats = this.config.getOrThrow("TELEGRAM_CHAT_IDS").toString().split(",");
+    const chats = this.chatIds();
 
     const positions = await Promise.all(
       order.positions.map(async (position) => {
