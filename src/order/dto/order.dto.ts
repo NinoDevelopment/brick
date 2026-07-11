@@ -22,13 +22,13 @@ import { ApiProperty } from "@nestjs/swagger";
 export class SchetInfoDto {
   @ApiProperty()
   @IsString()
-  @IsOptional()
-  companyName?: string;
+  @IsNotEmpty()
+  companyName: string;
 
   @ApiProperty()
   @IsString()
-  @IsOptional()
-  companyAddress?: string;
+  @IsNotEmpty()
+  companyAddress: string;
 
   @ApiProperty()
   @IsString()
@@ -37,28 +37,30 @@ export class SchetInfoDto {
 
   @ApiProperty()
   @IsString()
-  @IsNotEmpty()
+  @Matches(/^\d{9}$/, { message: "БИК должен содержать 9 цифр" })
   bic: string;
 
   @ApiProperty()
   @IsString()
-  @IsNotEmpty()
+  @Matches(/^\d{20}$/, { message: "Корреспондентский счёт должен содержать 20 цифр" })
   correspondentAccount: string;
 
   @ApiProperty()
   @IsString()
-  @IsNotEmpty()
+  @Matches(/^\d{20}$/, { message: "Расчётный счёт должен содержать 20 цифр" })
   receiverAccount: string;
 
   @ApiProperty()
   @IsString()
-  @IsNotEmpty()
+  @Matches(/^\d{10}(\d{2})?$/, { message: "ИНН должен содержать 10 или 12 цифр" })
   inn: string;
 
-  @ApiProperty()
+  @ApiProperty({ required: false })
+  @ValidateIf((o: SchetInfoDto) => o.inn?.length === 10)
   @IsString()
   @IsNotEmpty()
-  kpp: string;
+  @Matches(/^\d{9}$/, { message: "КПП должен содержать 9 цифр" })
+  kpp?: string;
 }
 
 export class LookupInnDto {
@@ -82,6 +84,24 @@ export class CompanyByInnDto {
 
   @ApiProperty()
   companyAddress: string;
+}
+
+export class LookupBicDto {
+  @ApiProperty()
+  @IsString()
+  @Matches(/^\d{9}$/, { message: "БИК должен содержать 9 цифр" })
+  bic: string;
+}
+
+export class BankByBicDto {
+  @ApiProperty()
+  bic: string;
+
+  @ApiProperty()
+  bankName: string;
+
+  @ApiProperty()
+  correspondentAccount: string;
 }
 
 export class CallMeDto {
@@ -215,7 +235,6 @@ export class AddressInfo {
   @ApiProperty()
   @IsOptional()
   @IsString()
-  @IsNotEmpty()
   @Max(300)
   entrance?: string;
 

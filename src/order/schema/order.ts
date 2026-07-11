@@ -19,22 +19,22 @@ export const PromocodeSchema = SchemaFactory.createForClass(Promocode);
 
 @Schema()
 export class SchetInfo {
-  @Prop()
-  companyName?: string;
-  @Prop()
-  companyAddress?: string;
-  @Prop()
+  @Prop({ required: true })
+  companyName: string;
+  @Prop({ required: true })
+  companyAddress: string;
+  @Prop({ required: true })
   bankName: string;
-  @Prop()
+  @Prop({ required: true })
   bic: string;
-  @Prop()
+  @Prop({ required: true })
   correspondentAccount: string;
-  @Prop()
+  @Prop({ required: true })
   receiverAccount: string;
-  @Prop()
+  @Prop({ required: true })
   inn: string;
   @Prop()
-  kpp: string;
+  kpp?: string;
 }
 
 @Schema()

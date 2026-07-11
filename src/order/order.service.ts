@@ -9,6 +9,7 @@ import { Order, PaymentType, DeliveryType, Promocode, OrderDocument } from "./sc
 import { Model } from "mongoose";
 import {
   CompanyByInnDto,
+  BankByBicDto,
   CreateOrderDto,
   OrderAmountDto,
   OrderPositionDto,
@@ -257,29 +258,7 @@ export class OrderService {
   }
 
   async lookupCompanyByInn(inn: string): Promise<CompanyByInnDto> {
-    const token = this.unquote(process.env["DADATA_TOKEN"]);
-    if (!token) {
-      throw new InternalServerErrorException("Сервис автозаполнения не настроен");
-    }
-
-    const response = await fetch(
-      "https://suggestions.dadata.ru/suggestions/api/4_1/rs/findById/party",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-          Authorization: `Token ${token}`,
-        },
-        body: JSON.stringify({ query: inn }),
-      },
-    );
-
-    if (!response.ok) {
-      throw new BadRequestException("Не удалось получить данные компании");
-    }
-
-    const data = (await response.json()) as {
+    const data = await this.fetchDadata<{
       suggestions?: Array<{
         data?: {
           kpp?: string;
@@ -287,7 +266,9 @@ export class OrderService {
           address?: { unrestricted_value?: string; value?: string };
         };
       }>;
-    };
+    }>("https://suggestions.dadata.ru/suggestions/api/4_1/rs/findById/party", {
+      query: inn,
+    });
 
     const company = data.suggestions?.[0]?.data;
     if (!company) {
@@ -300,6 +281,60 @@ export class OrderService {
       companyName: company.name?.short_with_opf ?? company.name?.full_with_opf ?? "",
       companyAddress: company.address?.unrestricted_value ?? company.address?.value ?? "",
     };
+  }
+
+  async lookupBankByBic(bic: string): Promise<BankByBicDto> {
+    const data = await this.fetchDadata<{
+      suggestions?: Array<{
+        value?: string;
+        data?: {
+          bic?: string;
+          correspondent_account?: string;
+          name?: { payment?: string; short?: string; full?: string };
+        };
+      }>;
+    }>("https://suggestions.dadata.ru/suggestions/api/4_1/rs/findById/bank", {
+      query: bic,
+    });
+
+    const bank = data.suggestions?.[0];
+    if (!bank?.data) {
+      throw new NotFoundException("Банк с таким БИК не найден");
+    }
+
+    return {
+      bic: bank.data.bic ?? bic,
+      bankName:
+        bank.value ??
+        bank.data.name?.payment ??
+        bank.data.name?.short ??
+        bank.data.name?.full ??
+        "",
+      correspondentAccount: bank.data.correspondent_account ?? "",
+    };
+  }
+
+  private async fetchDadata<T>(url: string, body: Record<string, string>): Promise<T> {
+    const token = this.unquote(process.env["DADATA_TOKEN"]);
+    if (!token) {
+      throw new InternalServerErrorException("Сервис автозаполнения не настроен");
+    }
+
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+        Authorization: `Token ${token}`,
+      },
+      body: JSON.stringify(body),
+    });
+
+    if (!response.ok) {
+      throw new BadRequestException("Не удалось получить данные из DaData");
+    }
+
+    return (await response.json()) as T;
   }
 
   private unquote(value?: string): string {
