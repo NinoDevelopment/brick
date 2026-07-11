@@ -35,7 +35,7 @@ services:
       - .env
     #    volumes:
     #     - /var/lib/docker/volumes/online-shop-front_data-certs/_data:/etc/nginx/ssl
-    command: ["npm", "run", "start"]
+    command: ["npm", "run", "start:prod"]
 
   mongo:
     user: root
@@ -59,7 +59,7 @@ services:
     image: mongo-express
     restart: always
     ports:
-      - "8083:8081"
+      - "127.0.0.1:8083:8081"
     environment:
       ME_CONFIG_BASICAUTH_USERNAME: ${MONGO_LOGIN}
       ME_CONFIG_BASICAUTH_PASSWORD: ${MONGO_PASS}

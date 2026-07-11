@@ -38,7 +38,7 @@ dotenv.config();
       { name: Payment.name, schema: PaymentSchema },
       { name: Auth.name, schema: AuthSchema },
       { name: Project.name, schema: ProjectSchema },
-      { name: Promocode.name, schema: PromocodeSchema }
+      { name: Promocode.name, schema: PromocodeSchema },
     ]),
     MailModule,
     TelegramAPIModule,

@@ -2,6 +2,7 @@ import { Injectable } from "@nestjs/common";
 import { MailerService } from "@nestjs-modules/mailer";
 import { ConfigService } from "@nestjs/config";
 import { Order, DeliveryType, PaymentType, OrderPosition } from "../order/schema/order";
+import { CallMeDto } from "../order/dto/order.dto";
 import { Item } from "../item/schema/item";
 
 import { PDFDocument, PDFPage, PDFFont } from "pdf-lib";
@@ -10,7 +11,7 @@ const fontkit = require("fontkit");
 const path = require("path");
 
 const templatePath = path.join(__dirname, "templates", "template.pdf");
-import { convert as convertNumberToWordsRu } from 'number-to-words-ru'
+import { convert as convertNumberToWordsRu } from "number-to-words-ru";
 const fontPath = path.join(__dirname, "templates", "DejaVuSans.ttf");
 const outputPath = path.join(__dirname, "templates", "order.pdf");
 
@@ -151,7 +152,7 @@ export class MailService {
       });
       console.log("sending email to admin");
       await this.mailerService.sendMail({
-        to: this.config.getOrThrow("ADMIN_MAIL").toString().split("|"),
+        to: this.getAdminRecipients(),
         subject: "Новый заказ",
         template: "./order",
         context: {
@@ -163,12 +164,52 @@ export class MailService {
       if (fs.existsSync(outputPath)) fs.unlinkSync(outputPath);
     } catch (error) {
       const details =
-        error instanceof Error
-          ? { message: error.message, stack: error.stack }
-          : error;
+        error instanceof Error ? { message: error.message, stack: error.stack } : error;
       console.error("Ошибка при отправке письма:", details);
       throw new Error("Ошибка при отправке письма");
     }
+  }
+
+  async sendCallmeRequest(req: CallMeDto): Promise<void> {
+    const context = {
+      name: req.name,
+      companyName: req.companyName || "—",
+      email: req.email,
+      text: req.text,
+      requestDate: this.getMoscowDateTimeString(new Date(), true),
+    };
+
+    const results = await Promise.allSettled([
+      this.mailerService.sendMail({
+        to: this.getAdminRecipients(),
+        subject: "Запрос на связь",
+        template: "./callme",
+        context,
+      }),
+      this.mailerService.sendMail({
+        to: req.email,
+        subject: "Мы получили вашу заявку",
+        template: "./callme-thanks",
+        context: { name: req.name },
+      }),
+    ]);
+
+    const labels = ["админу", "клиенту"];
+    results.forEach((result, index) => {
+      if (result.status === "rejected") {
+        console.error(`Ошибка при отправке заявки на почту (${labels[index]}):`, result.reason);
+      }
+    });
+  }
+
+  private getAdminRecipients(): string[] {
+    return this.config
+      .getOrThrow("ADMIN_MAIL")
+      .toString()
+      .replace(/^["']|["']$/g, "")
+      .split("|")
+      .map((email: string) => email.trim())
+      .filter(Boolean);
   }
 
   public getMoscowDateTimeString(date: Date, time: boolean) {
@@ -241,7 +282,7 @@ export class MailService {
       });
 
       const totalCostSum = totalCosts.reduce((sum, position) => sum + position.totalCost, 0);
-      const totalCostSumNDS = totalCostSum * 20 / 120;
+      const totalCostSumNDS = (totalCostSum * 20) / 120;
       const totalCostSumWord = convertNumberToWordsRu(totalCostSum);
       const formattedTotalCostSum = totalCostSum.toLocaleString("ru-RU", {
         style: "currency",

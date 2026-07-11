@@ -15,7 +15,7 @@ export class CreateCategoryDto {
 
   @IsOptional()
   @IsBoolean()
-  hasSale: Boolean;
+  hasSale: boolean;
 }
 
 export class UpdateCategoryDto extends CreateCategoryDto {

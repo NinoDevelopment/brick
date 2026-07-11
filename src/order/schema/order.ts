@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import mongoose, { HydratedDocument } from "mongoose";
-import { Item } from '../../item/schema/item';
+import { Item } from "../../item/schema/item";
 
 export type OrderPositionDocument = HydratedDocument<OrderPosition>;
 
@@ -10,7 +10,7 @@ export type PromocodeDocument = HydratedDocument<Promocode>;
 export class Promocode {
   @Prop({ required: true })
   code: string;
-  
+
   @Prop({ required: true })
   skidka: number;
 }
@@ -20,9 +20,9 @@ export const PromocodeSchema = SchemaFactory.createForClass(Promocode);
 @Schema()
 export class SchetInfo {
   @Prop()
-  companyName: string;
+  companyName?: string;
   @Prop()
-  companyAddress: string;
+  companyAddress?: string;
   @Prop()
   bankName: string;
   @Prop()
@@ -47,6 +47,9 @@ export class OrderPosition {
 
   @Prop({ required: true })
   quantity: number;
+
+  @Prop({ required: true })
+  pack: number;
 }
 
 export enum DeliveryType {
@@ -55,9 +58,9 @@ export enum DeliveryType {
 }
 
 export enum PaymentType {
-  CASH   = "CASH",
+  CASH = "CASH",
   ONLINE = "ONLINE",
-  SCHET  =  "SCHET",
+  SCHET = "SCHET",
 }
 
 export type AddressDocument = HydratedDocument<Address>;
@@ -136,7 +139,7 @@ export class Order {
   paymentType: PaymentType;
 
   @Prop()
-  promocode: string;
+  promocode?: string;
 
   @Prop()
   schetInfo?: SchetInfo;

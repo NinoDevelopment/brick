@@ -15,7 +15,7 @@ export class Project {
   images: string[];
 
   @Prop({ default: true })
-  show: Boolean;
+  show: boolean;
 }
 
 export const ProjectSchema = SchemaFactory.createForClass(Project);

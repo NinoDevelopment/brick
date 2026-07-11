@@ -16,7 +16,7 @@ export class Category {
   image: string;
 
   @Prop({ default: false })
-  hasSale: Boolean;
+  hasSale: boolean;
 }
 
 export const CategorySchema = SchemaFactory.createForClass(Category);

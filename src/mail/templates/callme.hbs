@@ -1,0 +1,29 @@
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Запрос на связь</title>
+    <style>
+      body { font-family: Arial, sans-serif; line-height: 1.6; margin: 0; padding: 0;
+      background-color: #f7f7f7; } .container { max-width: 600px; margin: 20px auto; padding: 20px;
+      background-color: #ffffff; border-radius: 8px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); }
+      table { width: 100%; border-collapse: collapse; } table td, table th { border: 1px solid
+      #dddddd; padding: 8px; text-align: left; } table th { background-color: #f2f2f2; width: 35%; }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h3>Запрос на связь с сайта</h3>
+      <table>
+        <tbody>
+          <tr><th>Дата</th><td>{{requestDate}}</td></tr>
+          <tr><th>Имя</th><td>{{name}}</td></tr>
+          <tr><th>Компания</th><td>{{companyName}}</td></tr>
+          <tr><th>Email</th><td><a href="mailto:{{email}}">{{email}}</a></td></tr>
+          <tr><th>Сообщение</th><td>{{text}}</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </body>
+</html>

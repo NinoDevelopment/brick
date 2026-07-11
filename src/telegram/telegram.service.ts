@@ -141,15 +141,15 @@ ${params.positions}
 
   public getMoscowDateTimeString(date: Date) {
     const options: Intl.DateTimeFormatOptions = {
-      timeZone: 'Europe/Moscow',
-      month: 'short',
-      day: '2-digit',
-      year: 'numeric',
+      timeZone: "Europe/Moscow",
+      month: "short",
+      day: "2-digit",
+      year: "numeric",
       hour12: false,
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit',
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
     };
-    return date.toLocaleString('en-US', options);
+    return date.toLocaleString("en-US", options);
   }
 }

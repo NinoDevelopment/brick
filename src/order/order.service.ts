@@ -1,13 +1,21 @@
-import { Injectable, NotFoundException } from "@nestjs/common";
+import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
-import { Order, PaymentType, DeliveryType, Promocode } from "./schema/order";
+import { Order, PaymentType, DeliveryType, Promocode, OrderDocument } from "./schema/order";
 import { Model } from "mongoose";
-import { CreateOrderDto, OrderAmountDto, OrderPositionDto } from "./dto/order.dto";
+import { CreateOrderDto, OrderAmountDto, OrderPositionDto, OrderStatusDto } from "./dto/order.dto";
 import { Item } from "src/item/schema/item";
 import { deliveryPrice, freeDeliveryThreshold } from "./constants";
 import { MailService } from "../mail/mail.service";
 import { ItemService } from "../item/item.service";
 import { TelegramAPIService } from "../telegram/telegram.service";
+
+interface ResolvedPosition {
+  itemId: string;
+  price: number;
+  quantity: number;
+  pack: number;
+  discount: number;
+}
 
 @Injectable()
 export class OrderService {
@@ -28,6 +36,7 @@ export class OrderService {
   }
 
   async createPromocode(code: string, skidka: number): Promise<boolean> {
+    if (skidka > 100) return false;
     const exist = await this.promocodeModel.findOne({ code: code }).exec();
     if (exist) return false;
     const newPromocode = new this.promocodeModel({ code: code, skidka: skidka });
@@ -43,32 +52,8 @@ export class OrderService {
   }
 
   async create(dto: CreateOrderDto): Promise<Order> {
-    let amount = 0;
-    let discountedAmount = 0;
-    for (const pos of dto.positions) {
-      const item = await this.itemModel.findById(pos.itemId).exec();
-      if (!item) throw new NotFoundException(`товар ${pos.itemId} не найден`);
-
-      const price = pos.price * pos.quantity;
-
-      amount += price;
-
-      const discountedPrice = price - price * (item.discount / 100);
-
-      discountedAmount += discountedPrice;
-    }
-
-    let orderAmount =
-      amount >= freeDeliveryThreshold || dto.deliveryType !== DeliveryType.COURIER
-        ? discountedAmount
-        : discountedAmount + deliveryPrice;
-
-    if (dto.promocode) {
-        const promocode = await this.promocodeModel.findOne({ code: dto.promocode }).exec();
-        if (promocode) {
-            orderAmount = orderAmount - orderAmount * (promocode.skidka / 100);
-        }
-    }
+    const positions = await this.resolvePositions(dto.positions);
+    const orderAmount = await this.computeFinalAmount(positions, dto.deliveryType, dto.promocode);
 
     const order: Order = {
       orderId: await this.generateOrderId(),
@@ -78,18 +63,21 @@ export class OrderService {
       address: dto.address,
       shopAddress: dto.shopAddress,
       completed: false,
-      positions: dto.positions,
+      positions: positions.map(({ itemId, price, quantity, pack }) => ({
+        itemId,
+        price,
+        quantity,
+        pack,
+      })),
       amount: orderAmount,
       createdAt: new Date(),
       comment: dto.comment,
       paid: false,
       deliveryType: dto.deliveryType,
       paymentType: dto.paymentType,
-      promocode: dto.promocode,
+      promocode: dto.promocode ?? "",
       schetInfo: dto.schetInfo,
     };
-
-    console.log("order: ", order);
 
     const createdOrder = new this.orderModel(order);
 
@@ -101,40 +89,43 @@ export class OrderService {
     return createdOrder.save();
   }
 
-  async calculateOrderAmount(positions: OrderPositionDto[], promocode: string): Promise<OrderAmountDto> {
+  async calculateOrderAmount(
+    positionsInput: OrderPositionDto[],
+    promocode?: string,
+    deliveryType?: DeliveryType,
+  ): Promise<OrderAmountDto> {
+    const positions = await this.resolvePositions(positionsInput);
+
     if (positions.length === 0) {
       return { amount: 0, amountWithDelivery: 0, discountedAmount: 0 };
     }
-    let amount = 0;
-    let discountedAmount = 0;
-    for (const pos of positions) {
-      const item = await this.itemModel.findById(pos.itemId).exec();
-      if (!item) throw new NotFoundException(`товар ${pos.itemId} не найден`);
 
-      const price = pos.price * pos.quantity;
-
-      amount += price;
-
-      const discountedPrice = price - price * (item.discount / 100);
-
-      discountedAmount += discountedPrice;
-    }
-
+    const totals = this.calculateTotals(positions);
     let withDelivery =
-      amount >= freeDeliveryThreshold ? discountedAmount : discountedAmount + deliveryPrice;
+      totals.amount >= freeDeliveryThreshold
+        ? totals.discountedAmount
+        : totals.discountedAmount + deliveryPrice;
+
+    let amount = totals.amount;
+    let discountedAmount = totals.discountedAmount;
 
     if (promocode) {
-        const code = await this.promocodeModel.findOne({ code: promocode }).exec();
-        if (code) {
-            withDelivery = withDelivery - withDelivery * (code.skidka / 100);
-            amount = amount - amount * (code.skidka / 100);
-            discountedAmount = discountedAmount - discountedAmount * (code.skidka / 100);
-        }
+      const code = await this.promocodeModel.findOne({ code: promocode }).exec();
+      if (code) {
+        const discountFactor = code.skidka / 100;
+        withDelivery = Math.max(0, withDelivery - withDelivery * discountFactor);
+        amount = Math.max(0, amount - amount * discountFactor);
+        discountedAmount = Math.max(0, discountedAmount - discountedAmount * discountFactor);
+      }
+    }
+
+    if (deliveryType === DeliveryType.SELF) {
+      withDelivery = discountedAmount;
     }
 
     return {
-      amount: amount,
-      discountedAmount: discountedAmount,
+      amount,
+      discountedAmount,
       amountWithDelivery: withDelivery,
     };
   }
@@ -146,6 +137,12 @@ export class OrderService {
 
   async findById(id: string): Promise<Order | null> {
     return this.orderModel.findById(id).exec();
+  }
+
+  async findPublicStatus(id: string): Promise<OrderStatusDto | null> {
+    const order = await this.orderModel.findById(id).exec();
+    if (!order) return null;
+    return this.toPublicStatus(order);
   }
 
   async complete(id: string): Promise<Order | null> {
@@ -163,19 +160,104 @@ export class OrderService {
     return order.save();
   }
 
+  private async resolvePositions(positions: OrderPositionDto[]): Promise<ResolvedPosition[]> {
+    return Promise.all(
+      positions.map(async (pos) => {
+        const item = await this.itemModel.findById(pos.itemId).exec();
+        if (!item) throw new NotFoundException(`товар ${pos.itemId} не найден`);
+        if (!item.available) {
+          throw new BadRequestException(`товар ${pos.itemId} недоступен для заказа`);
+        }
+
+        return {
+          itemId: pos.itemId,
+          price: item.price,
+          quantity: pos.quantity,
+          pack: item.pack,
+          discount: item.discount,
+        };
+      }),
+    );
+  }
+
+  private calculateTotals(positions: ResolvedPosition[]): {
+    amount: number;
+    discountedAmount: number;
+  } {
+    let amount = 0;
+    let discountedAmount = 0;
+
+    for (const pos of positions) {
+      const itemTotal = pos.price * pos.quantity;
+      amount += itemTotal;
+      discountedAmount += itemTotal - itemTotal * (pos.discount / 100);
+    }
+
+    return { amount, discountedAmount: discountedAmount };
+  }
+
+  private async computeFinalAmount(
+    positions: ResolvedPosition[],
+    deliveryType: DeliveryType,
+    promocode?: string,
+  ): Promise<number> {
+    const totals = this.calculateTotals(positions);
+    let orderAmount = totals.discountedAmount;
+
+    if (deliveryType === DeliveryType.COURIER && totals.amount < freeDeliveryThreshold) {
+      orderAmount += deliveryPrice;
+    }
+
+    if (promocode) {
+      const promo = await this.promocodeModel.findOne({ code: promocode }).exec();
+      if (promo) {
+        orderAmount = Math.max(0, orderAmount - orderAmount * (promo.skidka / 100));
+      }
+    }
+
+    return orderAmount;
+  }
+
+  private toPublicStatus(order: OrderDocument): OrderStatusDto {
+    const positions = order.positions.map((position) => ({
+      itemId: position.itemId,
+      quantity: position.quantity,
+      pack: position.pack ?? 400,
+    }));
+
+    return {
+      _id: order._id.toString(),
+      orderId: order.orderId,
+      amount: order.amount,
+      paid: order.paid,
+      completed: order.completed,
+      paymentType: order.paymentType,
+      deliveryType: order.deliveryType,
+      shopAddress: order.shopAddress,
+      address: order.address
+        ? {
+            city: order.address.city,
+            address: order.address.address,
+          }
+        : undefined,
+      positions,
+      createdAt: order.createdAt,
+    };
+  }
+
   private async generateOrderId(): Promise<string> {
     const currentYear = new Date().getFullYear().toString();
-    const lastOrder = await this.orderModel.findOne({}, {}, { sort: { 'createdAt': -1 } }).exec();
+    const lastOrder = await this.orderModel.findOne({}, {}, { sort: { createdAt: -1 } }).exec();
     if (lastOrder) {
       const lastOrderId = lastOrder.orderId;
       const lastOrderYear = lastOrderId.slice(0, 4);
       if (lastOrderYear === currentYear) {
         const lastOrderNumber = parseInt(lastOrderId.slice(4), 10);
         const nextOrderNumber = lastOrderNumber + 1;
-        const paddedOrderNumber = nextOrderNumber.toString().padStart(6, '0');
+        const paddedOrderNumber = nextOrderNumber.toString().padStart(6, "0");
         return currentYear + paddedOrderNumber;
       }
     }
-    return currentYear + '000001';
+    return currentYear + "000001";
   }
 }

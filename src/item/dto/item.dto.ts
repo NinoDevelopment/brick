@@ -40,16 +40,16 @@ export class CreateItemDto {
   price: number;
 
   @IsBoolean()
-  available: Boolean;
+  available: boolean;
 
   @IsString()
   color: string;
 
   @IsBoolean()
-  isRecommendation: Boolean;
+  isRecommendation: boolean;
 
   @IsBoolean()
-  show: Boolean;
+  show: boolean;
 }
 
 export class UpdateItemDto extends CreateItemDto {

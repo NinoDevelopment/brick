@@ -5,7 +5,7 @@ import * as mongoose from "mongoose";
 
 import { CreateItemDto, UpdateItemDto } from "./dto/item.dto";
 import { Item } from "./schema/item";
-import { Category } from '../category/schema/category';
+import { Category } from "../category/schema/category";
 
 @Injectable()
 export class ItemService {

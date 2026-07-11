@@ -4,7 +4,7 @@ import { Auth } from "./schema/auth";
 import { Model } from "mongoose";
 import { InjectModel } from "@nestjs/mongoose";
 import * as argon2 from "argon2";
-import { randomBytes } from 'crypto';
+import { randomBytes } from "crypto";
 
 @Injectable()
 export class AuthGuard implements CanActivate {
@@ -43,7 +43,7 @@ export class AuthGuard implements CanActivate {
   }
 
   public async generateNewPassword(): Promise<string> {
-    const randomValue = randomBytes(16).toString('hex');
+    const randomValue = randomBytes(16).toString("hex");
     return `live_${randomValue}`;
   }
 }

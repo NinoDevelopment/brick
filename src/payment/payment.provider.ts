@@ -41,6 +41,13 @@ export class PaymentProvider {
       throw new BadRequestException(`заказ ${orderId} уже оплачен или завершен`);
     }
 
+    const existingPayment = await this.paymentModel
+      .findOne({ orderId, status: PaymentStatus.PENDING })
+      .exec();
+    if (existingPayment) {
+      return existingPayment;
+    }
+
     const createPayload: ICreatePayment = {
       amount: {
         value: Number(order.amount).toFixed(2),
@@ -60,10 +67,7 @@ export class PaymentProvider {
     } catch (error) {
       const yooError = this.extractYooError(error);
       this.logger.error(`YooKassa createPayment failed: ${JSON.stringify(yooError)}`);
-      throw new InternalServerErrorException({
-        message: "Не удалось создать платёж в ЮKassa",
-        yooError,
-      });
+      throw new InternalServerErrorException("Не удалось создать платёж в ЮKassa");
     }
 
     this.logger.log(`YooKassa payment created: ${yooPayment.id}`);
@@ -129,14 +133,25 @@ export class PaymentProvider {
   @Cron(CronExpression.EVERY_5_SECONDS)
   async checkReceivedPayments() {
     const pendingPayments = await this.paymentModel.find({ status: PaymentStatus.PENDING }).exec();
-    await Promise.all(pendingPayments.map(this.checkPaymentStatus.bind(this)));
+    await Promise.all(
+      pendingPayments.map(async (pay) => {
+        try {
+          await this.checkPaymentStatus(pay);
+        } catch (error) {
+          this.logger.error(`Ошибка проверки платежа ${pay.yooId}: ${String(error)}`);
+        }
+      }),
+    );
   }
 
   private async checkPaymentStatus(pay: PaymentDocument) {
     const yooPayment = await this.yooCheckout.getPayment(pay.yooId);
-    console.log(yooPayment);
     switch (yooPayment.status) {
       case "succeeded":
+        if (Number(yooPayment.amount.value) !== Number(pay.amount)) {
+          this.logger.error(`Сумма платежа ${yooPayment.id} не совпадает с заказом ${pay.orderId}`);
+          return;
+        }
         pay.status = PaymentStatus.SUCCEEDED;
         pay.paid = true;
         await this.orderService.setPaid(pay.orderId, true);

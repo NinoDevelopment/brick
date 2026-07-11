@@ -28,7 +28,7 @@ export class Payment {
   confirmURL: string;
 
   @Prop({ required: true, default: false })
-  paid: Boolean;
+  paid: boolean;
 
   @Prop({ required: true, type: Date, default: new Date() })
   createdAt: Date;

@@ -17,18 +17,21 @@ import {
   FindOneParams,
   OrderAmountDto,
   CallMeDto,
-  CreatePromocodeDto
+  CreatePromocodeDto,
+  OrderStatusDto,
 } from "./dto/order.dto";
 import { PaymentProvider } from "src/payment/payment.provider";
 import { AuthGuard } from "src/auth/auth.guard";
 import { TelegramAPIService } from "src/telegram/telegram.service";
+import { MailService } from "src/mail/mail.service";
 
 @Controller("order")
 export class OrderController {
   constructor(
     private orderService: OrderService,
     private paymentProvider: PaymentProvider,
-    private tegramProvider: TelegramAPIService
+    private tegramProvider: TelegramAPIService,
+    private mailProvider: MailService,
   ) {}
 
   @Post()
@@ -38,7 +41,7 @@ export class OrderController {
 
   @Post("/amount")
   async calculateOrderAmount(@Body() req: CalculateOrderAmountRequest): Promise<OrderAmountDto> {
-    return this.orderService.calculateOrderAmount(req.positions, req.promocode);
+    return this.orderService.calculateOrderAmount(req.positions, req.promocode, req.deliveryType);
   }
 
   @Put("/complete/:id")
@@ -56,8 +59,8 @@ export class OrderController {
   }
 
   @Get(":id")
-  async findOne(@Param() params: FindOneParams): Promise<Order> {
-    const order = await this.orderService.findById(params.id);
+  async findOne(@Param() params: FindOneParams): Promise<OrderStatusDto> {
+    const order = await this.orderService.findPublicStatus(params.id);
     if (!order) throw new NotFoundException("заказ не найден");
     return order;
   }
@@ -69,9 +72,15 @@ export class OrderController {
   }
 
   @Post("/callme")
-  async callMe(@Body() req: CallMeDto): Promise<{success: boolean}> {
-    const msg = await this.tegramProvider.sendCallmeRequest(req);
-    console.log(msg[0]);
+  async callMe(@Body() req: CallMeDto): Promise<{ success: boolean }> {
+    setImmediate(() => {
+      this.tegramProvider.sendCallmeRequest(req).catch((error) => {
+        console.error("Ошибка отправки заявки в Telegram:", error);
+      });
+      this.mailProvider.sendCallmeRequest(req).catch((error) => {
+        console.error("Ошибка отправки заявки на почту:", error);
+      });
+    });
     return { success: true };
   }
 

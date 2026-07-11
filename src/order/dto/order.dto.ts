@@ -15,6 +15,7 @@ import {
   ValidateIf,
   ValidateNested,
 } from "class-validator";
+import { Type } from "class-transformer";
 import { DeliveryType, PaymentType } from "../schema/order";
 import { ApiProperty } from "@nestjs/swagger";
 
@@ -22,12 +23,12 @@ export class SchetInfoDto {
   @ApiProperty()
   @IsString()
   @IsOptional()
-  companyName: string;
+  companyName?: string;
 
   @ApiProperty()
   @IsString()
   @IsOptional()
-  companyAddress: string;
+  companyAddress?: string;
 
   @ApiProperty()
   @IsString()
@@ -67,9 +68,9 @@ export class CallMeDto {
   name: string;
 
   @ApiProperty()
+  @IsOptional()
   @IsString()
-  @IsNotEmpty()
-  companyName: string;
+  companyName?: string;
 
   @ApiProperty()
   @IsEmail()
@@ -86,13 +87,73 @@ export class OrderPositionDto {
   @IsMongoId()
   itemId: string;
 
-  @ApiProperty()
+  @ApiProperty({ required: false, deprecated: true })
+  @IsOptional()
   @IsPositive()
-  price: number;
+  price?: number;
 
   @ApiProperty()
   @IsPositive()
   quantity: number;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsPositive()
+  pack?: number;
+}
+
+export class OrderStatusAddressDto {
+  @ApiProperty()
+  city: string;
+
+  @ApiProperty()
+  address: string;
+}
+
+export class OrderStatusPositionDto {
+  @ApiProperty()
+  itemId: string;
+
+  @ApiProperty()
+  quantity: number;
+
+  @ApiProperty()
+  pack: number;
+}
+
+export class OrderStatusDto {
+  @ApiProperty()
+  _id: string;
+
+  @ApiProperty()
+  orderId: string;
+
+  @ApiProperty()
+  amount: number;
+
+  @ApiProperty()
+  paid: boolean;
+
+  @ApiProperty()
+  completed: boolean;
+
+  @ApiProperty({ enum: PaymentType })
+  paymentType: PaymentType;
+
+  @ApiProperty({ enum: DeliveryType })
+  deliveryType: DeliveryType;
+
+  @ApiProperty({ required: false })
+  shopAddress?: string;
+
+  @ApiProperty({ required: false, type: OrderStatusAddressDto })
+  address?: OrderStatusAddressDto;
+
+  @ApiProperty({ type: [OrderStatusPositionDto] })
+  positions: OrderStatusPositionDto[];
+
+  @ApiProperty()
+  createdAt: Date;
 }
 
 export class AddressInfo {
@@ -149,7 +210,7 @@ export class CreateOrderDto {
   @ApiProperty()
   @IsOptional()
   @IsString()
-  orderId: string;
+  orderId?: string;
 
   @ApiProperty()
   @IsString()
@@ -169,6 +230,7 @@ export class CreateOrderDto {
   @ValidateIf((o: CreateOrderDto) => o.deliveryType === DeliveryType.COURIER)
   @IsNotEmptyObject()
   @ValidateNested()
+  @Type(() => AddressInfo)
   address: AddressInfo;
 
   @ApiProperty()
@@ -177,15 +239,21 @@ export class CreateOrderDto {
   @IsNotEmpty()
   shopAddress: string;
 
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsString()
+  shopCity?: string;
+
   @ApiProperty()
   @ArrayNotEmpty()
-  @ValidateNested()
+  @ValidateNested({ each: true })
+  @Type(() => OrderPositionDto)
   positions: OrderPositionDto[];
 
   @ApiProperty()
   @IsOptional()
   @IsString()
-  comment: string;
+  comment?: string;
 
   @ApiProperty()
   @IsEnum(DeliveryType)
@@ -198,11 +266,12 @@ export class CreateOrderDto {
   @ApiProperty()
   @IsOptional()
   @IsString()
-  promocode: string;
+  promocode?: string;
 
   @ApiProperty()
   @ValidateIf((o: CreateOrderDto) => o.paymentType === PaymentType.SCHET)
   @ValidateNested()
+  @Type(() => SchetInfoDto)
   schetInfo?: SchetInfoDto;
 }
 
@@ -229,13 +298,19 @@ export class OrderAmountDto {
 export class CalculateOrderAmountRequest {
   @ApiProperty()
   @IsArray()
-  @ValidateNested()
+  @ValidateNested({ each: true })
+  @Type(() => OrderPositionDto)
   positions: OrderPositionDto[];
 
   @ApiProperty()
   @IsOptional()
   @IsString()
-  promocode: string;
+  promocode?: string;
+
+  @ApiProperty({ required: false, enum: DeliveryType })
+  @IsOptional()
+  @IsEnum(DeliveryType)
+  deliveryType?: DeliveryType;
 }
 
 export class CreatePromocodeDto {
@@ -247,5 +322,6 @@ export class CreatePromocodeDto {
   @ApiProperty()
   @IsNumber()
   @IsPositive()
+  @Max(100)
   skidka: number;
 }

@@ -61,18 +61,21 @@ describe("MailService", () => {
       positions: [
         {
           itemId: "item123",
-          price: 19.40,
+          price: 19.4,
           quantity: 59400,
+          pack: 400,
         },
         {
           itemId: "item456",
           price: 35,
           quantity: 1000,
+          pack: 400,
         },
         {
           itemId: "item446",
           price: 15,
           quantity: 1500,
+          pack: 400,
         },
       ],
       amount: 35,

@@ -16,7 +16,7 @@ export class CreateProjectDto {
   images: string[];
 
   @IsBoolean()
-  show: Boolean;
+  show: boolean;
 }
 
 export class UpdateProjectDto extends CreateProjectDto {
