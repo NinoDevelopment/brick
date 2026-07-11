@@ -173,6 +173,7 @@ export class MailService {
   async sendCallmeRequest(req: CallMeDto): Promise<void> {
     const context = {
       name: req.name,
+      phoneNumber: req.phoneNumber,
       companyName: req.companyName || "—",
       email: req.email,
       text: req.text,

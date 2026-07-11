@@ -43,6 +43,7 @@ export class TelegramAPIService {
             chat_id: chat_id,
             text: `Запроc на связь от пользователя
 Имя: ${req.name}
+Телефон: ${req.phoneNumber}
 Компания: ${req.companyName}
 Email: ${req.email}
 Текст: ${req.text}`,

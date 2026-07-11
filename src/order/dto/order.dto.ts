@@ -68,6 +68,14 @@ export class CallMeDto {
   name: string;
 
   @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  @Matches(/^\+?[0-9]{1,3}\([0-9]{3}\)[0-9]{3}-[0-9]{2}-[0-9]{2}$/, {
+    message: "телефон должен быть в формате +7(XXX)XXX-XX-XX",
+  })
+  phoneNumber: string;
+
+  @ApiProperty()
   @IsOptional()
   @IsString()
   companyName?: string;
