@@ -13,11 +13,13 @@ import { OrderService } from "./order.service";
 import { Order, Promocode } from "./schema/order";
 import {
   CalculateOrderAmountRequest,
+  CompanyByInnDto,
   CreateOrderDto,
   FindOneParams,
   OrderAmountDto,
   CallMeDto,
   CreatePromocodeDto,
+  LookupInnDto,
   OrderStatusDto,
 } from "./dto/order.dto";
 import { PaymentProvider } from "src/payment/payment.provider";
@@ -42,6 +44,11 @@ export class OrderController {
   @Post("/amount")
   async calculateOrderAmount(@Body() req: CalculateOrderAmountRequest): Promise<OrderAmountDto> {
     return this.orderService.calculateOrderAmount(req.positions, req.promocode, req.deliveryType);
+  }
+
+  @Post("/lookup-inn")
+  async lookupCompanyByInn(@Body() req: LookupInnDto): Promise<CompanyByInnDto> {
+    return this.orderService.lookupCompanyByInn(req.inn);
   }
 
   @Put("/complete/:id")

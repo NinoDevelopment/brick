@@ -61,6 +61,29 @@ export class SchetInfoDto {
   kpp: string;
 }
 
+export class LookupInnDto {
+  @ApiProperty()
+  @IsString()
+  @Matches(/^\d{10}(\d{2})?$/, {
+    message: "ИНН должен содержать 10 или 12 цифр",
+  })
+  inn: string;
+}
+
+export class CompanyByInnDto {
+  @ApiProperty()
+  inn: string;
+
+  @ApiProperty()
+  kpp: string;
+
+  @ApiProperty()
+  companyName: string;
+
+  @ApiProperty()
+  companyAddress: string;
+}
+
 export class CallMeDto {
   @ApiProperty()
   @IsString()

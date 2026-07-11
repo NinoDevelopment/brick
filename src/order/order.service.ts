@@ -1,8 +1,19 @@
-import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
+import {
+  BadRequestException,
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+} from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
 import { Order, PaymentType, DeliveryType, Promocode, OrderDocument } from "./schema/order";
 import { Model } from "mongoose";
-import { CreateOrderDto, OrderAmountDto, OrderPositionDto, OrderStatusDto } from "./dto/order.dto";
+import {
+  CompanyByInnDto,
+  CreateOrderDto,
+  OrderAmountDto,
+  OrderPositionDto,
+  OrderStatusDto,
+} from "./dto/order.dto";
 import { Item } from "src/item/schema/item";
 import { deliveryPrice, freeDeliveryThreshold } from "./constants";
 import { MailService } from "../mail/mail.service";
@@ -243,6 +254,56 @@ export class OrderService {
       positions,
       createdAt: order.createdAt,
     };
+  }
+
+  async lookupCompanyByInn(inn: string): Promise<CompanyByInnDto> {
+    const token = this.unquote(process.env["DADATA_TOKEN"]);
+    if (!token) {
+      throw new InternalServerErrorException("Сервис автозаполнения не настроен");
+    }
+
+    const response = await fetch(
+      "https://suggestions.dadata.ru/suggestions/api/4_1/rs/findById/party",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+          Authorization: `Token ${token}`,
+        },
+        body: JSON.stringify({ query: inn }),
+      },
+    );
+
+    if (!response.ok) {
+      throw new BadRequestException("Не удалось получить данные компании");
+    }
+
+    const data = (await response.json()) as {
+      suggestions?: Array<{
+        data?: {
+          kpp?: string;
+          name?: { short_with_opf?: string; full_with_opf?: string };
+          address?: { unrestricted_value?: string; value?: string };
+        };
+      }>;
+    };
+
+    const company = data.suggestions?.[0]?.data;
+    if (!company) {
+      throw new NotFoundException("Компания с таким ИНН не найдена");
+    }
+
+    return {
+      inn,
+      kpp: company.kpp ?? "",
+      companyName: company.name?.short_with_opf ?? company.name?.full_with_opf ?? "",
+      companyAddress: company.address?.unrestricted_value ?? company.address?.value ?? "",
+    };
+  }
+
+  private unquote(value?: string): string {
+    return value?.replace(/^['"]|['"]$/g, "") ?? "";
   }
 
   private async generateOrderId(): Promise<string> {
