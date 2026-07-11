@@ -24,14 +24,6 @@ export class SchetInfo {
   @Prop({ required: true })
   companyAddress: string;
   @Prop({ required: true })
-  bankName: string;
-  @Prop({ required: true })
-  bic: string;
-  @Prop({ required: true })
-  correspondentAccount: string;
-  @Prop({ required: true })
-  receiverAccount: string;
-  @Prop({ required: true })
   inn: string;
   @Prop()
   kpp?: string;

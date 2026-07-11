@@ -87,15 +87,30 @@ describe("MailService", () => {
       schetInfo: {
         companyName: "ООО «Строительные технологии»",
         companyAddress: "Нижегородская обл., г. Нижний Новгород, ул. Деловая, дом № 19, офис 10",
-        bankName: "ПАО «Сбербанк России»",
-        bic: "MOCKBIC",
-        correspondentAccount: "1234567890",
-        receiverAccount: "0987654321",
         inn: "5260425364",
         kpp: "526001001",
       },
     };
 
-    await service.prepareOrder(mockOrder);
+    const preparedOrder = await service.prepareOrder(mockOrder);
+    const positions = [
+      { itemId: "item123", name: "Кирпич облицовочный", price: 19.4, quantity: 59400 },
+      { itemId: "item456", name: "Кирпич строительный", price: 35, quantity: 1000 },
+      { itemId: "item446", name: "Кирпич рядовой", price: 15, quantity: 1500 },
+    ];
+
+    await expect(service.generatePDFWithText(preparedOrder, positions)).resolves.toBeUndefined();
+
+    const fs = require("fs") as typeof import("fs");
+    const path = require("path") as typeof import("path");
+    const outputPath = path.join(__dirname, "templates", "order.pdf");
+    const samplePath = path.join(__dirname, "..", "..", "generated", "invoice-sample.pdf");
+
+    expect(fs.existsSync(outputPath)).toBe(true);
+    const pdfHeader = fs.readFileSync(outputPath).subarray(0, 5).toString();
+    expect(pdfHeader).toBe("%PDF-");
+
+    fs.mkdirSync(path.dirname(samplePath), { recursive: true });
+    fs.copyFileSync(outputPath, samplePath);
   });
 });

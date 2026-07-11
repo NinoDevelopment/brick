@@ -40,6 +40,18 @@
           </tbody>
         </table>
         <p>Общая сумма: <strong>{{orderSum}}</strong></p>
+        {{#if sellerRequisites}}
+          <h4>Реквизиты для оплаты:</h4>
+          <p>
+            {{sellerRequisites.companyName}}<br />
+            ИНН {{sellerRequisites.inn}}, КПП {{sellerRequisites.kpp}}<br />
+            {{sellerRequisites.address}}<br />
+            Р/с {{sellerRequisites.receiverAccount}}<br />
+            Банк: {{sellerRequisites.bankName}}<br />
+            БИК {{sellerRequisites.bic}}<br />
+            К/с {{sellerRequisites.correspondentAccount}}
+          </p>
+        {{/if}}
       </div>
 
       <div class="footer">

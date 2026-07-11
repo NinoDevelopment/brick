@@ -3,6 +3,7 @@ import { MailerService } from "@nestjs-modules/mailer";
 import { ConfigService } from "@nestjs/config";
 import { Order, DeliveryType, PaymentType, OrderPosition } from "../order/schema/order";
 import { CallMeDto } from "../order/dto/order.dto";
+import { getSellerRequisites } from "../order/seller-requisites";
 import { Item } from "../item/schema/item";
 
 import { PDFDocument, PDFPage, PDFFont } from "pdf-lib";
@@ -120,12 +121,15 @@ export class MailService {
 
       const preparedOrder = await this.prepareOrder(order);
       const url = this.url ? `https://${this.url}` : "";
+      const sellerRequisites =
+        order.paymentType === PaymentType.SCHET ? getSellerRequisites() : undefined;
       const orderData = {
         positions: positions.map((position) => ({
           ...position,
           url: url ? `${url}/product/${position.itemId}` : "",
         })),
         ...preparedOrder,
+        sellerRequisites,
       };
       const attachments = [];
       if (order.paymentType === PaymentType.SCHET) {

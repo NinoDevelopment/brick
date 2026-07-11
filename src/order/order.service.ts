@@ -9,7 +9,6 @@ import { Order, PaymentType, DeliveryType, Promocode, OrderDocument } from "./sc
 import { Model } from "mongoose";
 import {
   CompanyByInnDto,
-  BankByBicDto,
   CreateOrderDto,
   OrderAmountDto,
   OrderPositionDto,
@@ -280,37 +279,6 @@ export class OrderService {
       kpp: company.kpp ?? "",
       companyName: company.name?.short_with_opf ?? company.name?.full_with_opf ?? "",
       companyAddress: company.address?.unrestricted_value ?? company.address?.value ?? "",
-    };
-  }
-
-  async lookupBankByBic(bic: string): Promise<BankByBicDto> {
-    const data = await this.fetchDadata<{
-      suggestions?: Array<{
-        value?: string;
-        data?: {
-          bic?: string;
-          correspondent_account?: string;
-          name?: { payment?: string; short?: string; full?: string };
-        };
-      }>;
-    }>("https://suggestions.dadata.ru/suggestions/api/4_1/rs/findById/bank", {
-      query: bic,
-    });
-
-    const bank = data.suggestions?.[0];
-    if (!bank?.data) {
-      throw new NotFoundException("Банк с таким БИК не найден");
-    }
-
-    return {
-      bic: bank.data.bic ?? bic,
-      bankName:
-        bank.value ??
-        bank.data.name?.payment ??
-        bank.data.name?.short ??
-        bank.data.name?.full ??
-        "",
-      correspondentAccount: bank.data.correspondent_account ?? "",
     };
   }
 

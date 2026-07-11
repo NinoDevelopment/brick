@@ -32,26 +32,6 @@ export class SchetInfoDto {
 
   @ApiProperty()
   @IsString()
-  @IsNotEmpty()
-  bankName: string;
-
-  @ApiProperty()
-  @IsString()
-  @Matches(/^\d{9}$/, { message: "БИК должен содержать 9 цифр" })
-  bic: string;
-
-  @ApiProperty()
-  @IsString()
-  @Matches(/^\d{20}$/, { message: "Корреспондентский счёт должен содержать 20 цифр" })
-  correspondentAccount: string;
-
-  @ApiProperty()
-  @IsString()
-  @Matches(/^\d{20}$/, { message: "Расчётный счёт должен содержать 20 цифр" })
-  receiverAccount: string;
-
-  @ApiProperty()
-  @IsString()
   @Matches(/^\d{10}(\d{2})?$/, { message: "ИНН должен содержать 10 или 12 цифр" })
   inn: string;
 
@@ -84,24 +64,6 @@ export class CompanyByInnDto {
 
   @ApiProperty()
   companyAddress: string;
-}
-
-export class LookupBicDto {
-  @ApiProperty()
-  @IsString()
-  @Matches(/^\d{9}$/, { message: "БИК должен содержать 9 цифр" })
-  bic: string;
-}
-
-export class BankByBicDto {
-  @ApiProperty()
-  bic: string;
-
-  @ApiProperty()
-  bankName: string;
-
-  @ApiProperty()
-  correspondentAccount: string;
 }
 
 export class CallMeDto {

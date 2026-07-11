@@ -13,7 +13,6 @@ import { OrderService } from "./order.service";
 import { Order, Promocode } from "./schema/order";
 import {
   CalculateOrderAmountRequest,
-  BankByBicDto,
   CompanyByInnDto,
   CreateOrderDto,
   FindOneParams,
@@ -21,7 +20,6 @@ import {
   CallMeDto,
   CreatePromocodeDto,
   LookupInnDto,
-  LookupBicDto,
   OrderStatusDto,
 } from "./dto/order.dto";
 import { PaymentProvider } from "src/payment/payment.provider";
@@ -51,11 +49,6 @@ export class OrderController {
   @Post("/lookup-inn")
   async lookupCompanyByInn(@Body() req: LookupInnDto): Promise<CompanyByInnDto> {
     return this.orderService.lookupCompanyByInn(req.inn);
-  }
-
-  @Post("/lookup-bic")
-  async lookupBankByBic(@Body() req: LookupBicDto): Promise<BankByBicDto> {
-    return this.orderService.lookupBankByBic(req.bic);
   }
 
   @Put("/complete/:id")
