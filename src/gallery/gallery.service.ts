@@ -23,10 +23,17 @@ export class GalleryService {
     return this.projectModel.findById(projectId).select("-images").exec();
   }
 
-  async findProjectImages(projectId: string): Promise<string[]> {
-    const results = this.projectModel.findOne({ _id: projectId }).select("images").exec();
-    if (!results) return [];
-    return results as unknown as string[];
+  async findProjectImages(projectId: string): Promise<{ images: string[] }> {
+    const project = await this.projectModel
+      .findById(projectId)
+      .select("images")
+      .exec();
+
+    if (!project) {
+      return { images: [] };
+    }
+
+    return { images: project.images ?? [] };
   }
 
   async updateProject(updateProjectDto: UpdateProjectDto): Promise<Project | null> {

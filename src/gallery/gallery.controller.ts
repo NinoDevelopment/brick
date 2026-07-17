@@ -28,16 +28,18 @@ export class GalleryController {
     return this.galleryService.findAllProjects();
   }
 
+  @Get("images/:id")
+  async findProjectImages(
+    @Param() param: FindOneParams,
+  ): Promise<{ images: string[] }> {
+    return this.galleryService.findProjectImages(param.id);
+  }
+
   @Get(":id")
   async findProjectById(@Param() param: FindOneParams): Promise<Project> {
     const project = await this.galleryService.findProjectById(param.id);
     if (project === null) throw new NotFoundException("Проект не найден");
     return project;
-  }
-
-  @Get("/images/:id")
-  async findProjectImages(@Param() param: FindOneParams): Promise<string[]> {
-    return this.galleryService.findProjectImages(param.id);
   }
 
   @Post()
