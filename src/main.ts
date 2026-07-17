@@ -27,8 +27,8 @@ async function bootstrap() {
       forbidNonWhitelisted: true,
     }),
   );
-  app.use(json({ limit: "1mb" }));
-  app.use(urlencoded({ extended: true, limit: "1mb" }));
+  app.use(json({ limit: "20mb" }));
+  app.use(urlencoded({ extended: true, limit: "20mb" }));
   await app.listen(8080);
 }
 bootstrap().catch(console.log);
