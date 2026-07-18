@@ -24,10 +24,7 @@ export class GalleryService {
   }
 
   async findProjectImages(projectId: string): Promise<{ images: string[] }> {
-    const project = await this.projectModel
-      .findById(projectId)
-      .select("images")
-      .exec();
+    const project = await this.projectModel.findById(projectId).select("images").exec();
 
     if (!project) {
       return { images: [] };

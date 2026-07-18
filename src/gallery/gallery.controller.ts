@@ -29,9 +29,7 @@ export class GalleryController {
   }
 
   @Get("images/:id")
-  async findProjectImages(
-    @Param() param: FindOneParams,
-  ): Promise<{ images: string[] }> {
+  async findProjectImages(@Param() param: FindOneParams): Promise<{ images: string[] }> {
     return this.galleryService.findProjectImages(param.id);
   }
 

@@ -38,6 +38,7 @@ describe("CalcController", () => {
       mortarSeamEnabled,
     );
 
-    expect(result).toBe(20513);
+    expect(result.quantity).toBe(20513);
+    expect(result.quantityWithReserve).toBe(Math.ceil(20513 * 1.05));
   });
 });
