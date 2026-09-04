@@ -12,6 +12,7 @@ import {
   IsString,
   Matches,
   Max,
+  MaxLength,
   ValidateIf,
   ValidateNested,
 } from "class-validator";
@@ -173,37 +174,37 @@ export class AddressInfo {
   @ApiProperty()
   @IsString()
   @IsNotEmpty()
-  @Max(300)
+  @MaxLength(300)
   address: string;
 
   @ApiProperty()
   @IsOptional()
   @IsString()
-  @Max(300)
+  @MaxLength(300)
   addressName?: string;
 
   @ApiProperty()
   @IsNotEmpty()
   @IsString()
-  @Max(300)
+  @MaxLength(300)
   city: string;
 
   @ApiProperty()
   @IsOptional()
   @IsString()
-  @Max(300)
+  @MaxLength(300)
   flat?: string;
 
   @ApiProperty()
   @IsOptional()
   @IsString()
-  @Max(300)
+  @MaxLength(300)
   entrance?: string;
 
   @ApiProperty()
   @IsOptional()
   @IsString()
-  @Max(300)
+  @MaxLength(300)
   intercom?: string;
 
   @ApiProperty()
@@ -214,7 +215,7 @@ export class AddressInfo {
   @ApiProperty()
   @IsOptional()
   @IsString()
-  @Max(1500)
+  @MaxLength(1500)
   commentAddress?: string;
 }
 

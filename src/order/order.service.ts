@@ -87,7 +87,9 @@ export class OrderService {
       deliveryType: dto.deliveryType,
       paymentType: dto.paymentType,
       promocode: dto.promocode ?? "",
-      schetInfo: dto.schetInfo,
+      ...(dto.paymentType === PaymentType.SCHET && dto.schetInfo
+        ? { schetInfo: dto.schetInfo }
+        : {}),
     };
 
     const createdOrder = new this.orderModel(order);
@@ -312,16 +314,19 @@ export class OrderService {
   private async generateOrderId(): Promise<string> {
     const currentYear = new Date().getFullYear().toString();
     const lastOrder = await this.orderModel.findOne({}, {}, { sort: { createdAt: -1 } }).exec();
-    if (lastOrder) {
-      const lastOrderId = lastOrder.orderId;
+    const lastOrderId = lastOrder?.orderId;
+
+    if (lastOrderId && lastOrderId.length >= 4) {
       const lastOrderYear = lastOrderId.slice(0, 4);
       if (lastOrderYear === currentYear) {
-        const lastOrderNumber = parseInt(lastOrderId.slice(4), 10);
-        const nextOrderNumber = lastOrderNumber + 1;
-        const paddedOrderNumber = nextOrderNumber.toString().padStart(6, "0");
-        return currentYear + paddedOrderNumber;
+        const lastOrderNumber = Number.parseInt(lastOrderId.slice(4), 10);
+        const nextOrderNumber = Number.isFinite(lastOrderNumber)
+          ? lastOrderNumber + 1
+          : 1;
+        return currentYear + nextOrderNumber.toString().padStart(6, "0");
       }
     }
+
     return currentYear + "000001";
   }
 }
