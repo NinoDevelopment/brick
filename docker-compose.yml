@@ -35,7 +35,7 @@ services:
 
   mongo:
     user: root
-    image: mongo:8
+    image: mongo:8.2.6
     restart: always
     expose:
       - "27017"

@@ -9,6 +9,7 @@ export interface SellerRequisites {
   bic: string;
   correspondentAccount: string;
   receiverAccount: string;
+  signatory: string;
 }
 
 const DEFAULT_SELLER: SellerRequisites = {
@@ -20,6 +21,7 @@ const DEFAULT_SELLER: SellerRequisites = {
   bic: "042202824",
   correspondentAccount: "30101810200000000824",
   receiverAccount: "40702810429050009559",
+  signatory: "Рябков М. Н.",
 };
 
 export function getSellerRequisites(): SellerRequisites {
@@ -34,5 +36,6 @@ export function getSellerRequisites(): SellerRequisites {
       unquote(process.env["SELLER_CORRESPONDENT_ACCOUNT"]) || DEFAULT_SELLER.correspondentAccount,
     receiverAccount:
       unquote(process.env["SELLER_RECEIVER_ACCOUNT"]) || DEFAULT_SELLER.receiverAccount,
+    signatory: unquote(process.env["SELLER_SIGNATORY"]) || DEFAULT_SELLER.signatory,
   };
 }

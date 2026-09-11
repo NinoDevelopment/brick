@@ -1,5 +1,5 @@
 import { Test, TestingModule } from "@nestjs/testing";
-import { MailService } from "./mail.service";
+import { MailService, vatIncludedInAmount } from "./mail.service";
 import { DeliveryType, PaymentType, Order } from "../order/schema/order";
 import { ConfigModule } from "@nestjs/config";
 import { SmtpMailer } from "./smtp-mailer";
@@ -26,6 +26,11 @@ describe("MailService", () => {
 
   it("should be defined", () => {
     expect(service).toBeDefined();
+  });
+
+  it("extracts VAT 22/122 from amount including tax", () => {
+    expect(vatIncludedInAmount(122)).toBe(22);
+    expect(vatIncludedInAmount(1_209_860)).toBeCloseTo(218_171.48, 2);
   });
 
   it("should generate PDF with text", async () => {

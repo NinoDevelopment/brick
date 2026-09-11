@@ -15,6 +15,12 @@ import { unquote } from "../common/unquote";
 const templatePath = path.join(__dirname, "templates", "template.pdf");
 const fontPath = path.join(__dirname, "templates", "DejaVuSans.ttf");
 
+export const VAT_PERCENT = 22;
+
+export function vatIncludedInAmount(amount: number, vatPercent = VAT_PERCENT): number {
+  return (amount * vatPercent) / (100 + vatPercent);
+}
+
 interface ItemGetter {
   findByIds(ids: string[]): Promise<Array<Item & { _id: { toString(): string } }>>;
 }
@@ -278,7 +284,7 @@ export class MailService {
     });
 
     const totalCostSum = totalCosts.reduce((sum, position) => sum + position.totalCost, 0);
-    const totalCostSumNDS = (totalCostSum * 20) / 120;
+    const totalCostSumNDS = vatIncludedInAmount(totalCostSum);
     const totalCostSumWord = convertNumberToWordsRu(totalCostSum);
     const formattedTotalCostSum = totalCostSum.toLocaleString("ru-RU", {
       style: "currency",
