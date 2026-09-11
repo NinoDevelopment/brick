@@ -15,7 +15,7 @@ describe("ItemController", () => {
     findByCategoryId: jest.fn().mockResolvedValue([]),
     findRandom: jest.fn().mockResolvedValue([{ name: "sample" }]),
     findRecommendations: jest.fn().mockResolvedValue([{ name: "rec" }]),
-    findImages: jest.fn().mockResolvedValue(["img"]),
+    findImages: jest.fn().mockResolvedValue({ _id: mongoId, images: ["img"] }),
     create: jest.fn(),
     update: jest.fn(),
     delete: jest.fn(),
@@ -49,7 +49,7 @@ describe("ItemController", () => {
     jest.clearAllMocks();
     itemService.findRandom.mockResolvedValue([{ name: "sample" }]);
     itemService.findRecommendations.mockResolvedValue([{ name: "rec" }]);
-    itemService.findImages.mockResolvedValue(["img"]);
+    itemService.findImages.mockResolvedValue({ _id: mongoId, images: ["img"] });
     itemService.findById.mockResolvedValue({ name: "brick" });
   });
 

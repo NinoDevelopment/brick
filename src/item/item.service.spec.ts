@@ -32,7 +32,7 @@ describe("ItemService", () => {
         exec: jest.fn().mockResolvedValue({ images: ["a", "b"] }),
       }),
     });
-    await expect(service.findImages("id")).resolves.toEqual(["a", "b"]);
+    await expect(service.findImages("id")).resolves.toEqual({ _id: "id", images: ["a", "b"] });
   });
 
   it("findImages returns empty array when item is missing", async () => {
@@ -41,6 +41,6 @@ describe("ItemService", () => {
         exec: jest.fn().mockResolvedValue(null),
       }),
     });
-    await expect(service.findImages("id")).resolves.toEqual([]);
+    await expect(service.findImages("id")).resolves.toEqual({ _id: "id", images: [] });
   });
 });

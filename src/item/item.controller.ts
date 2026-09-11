@@ -46,7 +46,7 @@ export class ItemController {
   }
 
   @Get("images/:id")
-  async findImages(@Param() param: FindOneParams): Promise<string[]> {
+  async findImages(@Param() param: FindOneParams): Promise<{ _id: string; images: string[] }> {
     return this.itemService.findImages(param.id);
   }
 

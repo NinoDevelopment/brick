@@ -59,9 +59,9 @@ export class ItemService {
     ]);
   }
 
-  async findImages(itemId: string): Promise<string[]> {
+  async findImages(itemId: string): Promise<{ _id: string; images: string[] }> {
     const item = await this.itemModel.findById(itemId).select("images").exec();
-    return item?.images ?? [];
+    return { _id: itemId, images: item?.images ?? [] };
   }
 
   async update(updateItemDto: UpdateItemDto): Promise<Item | null> {
