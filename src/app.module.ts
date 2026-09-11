@@ -1,4 +1,4 @@
-import { Module } from "@nestjs/common";
+import { ExecutionContext, Module } from "@nestjs/common";
 import { APP_GUARD } from "@nestjs/core";
 import { MongooseModule } from "@nestjs/mongoose";
 import { ScheduleModule } from "@nestjs/schedule";
@@ -11,6 +11,7 @@ import { ItemModule } from "./item/item.module";
 import { OrderModule } from "./order/order.module";
 import { GalleryModule } from "./gallery/gallery.module";
 import { PaymentModule } from "./payment/payment.module";
+import { MediaModule } from "./media/media.module";
 import { AppController } from "./app.controller";
 import { unquote } from "./common/unquote";
 
@@ -21,6 +22,11 @@ import { unquote } from "./common/unquote";
     }),
     ThrottlerModule.forRoot({
       throttlers: [{ ttl: 60000, limit: 120 }],
+      skipIf: (context: ExecutionContext) => {
+        const request = context.switchToHttp().getRequest<{ path?: string; url?: string }>();
+        const path = request.path ?? request.url ?? "";
+        return path.startsWith("/media");
+      },
     }),
     ScheduleModule.forRoot(),
     MongooseModule.forRootAsync({
@@ -31,6 +37,7 @@ import { unquote } from "./common/unquote";
       }),
     }),
     AuthModule,
+    MediaModule,
     CategoryModule,
     ItemModule,
     OrderModule,

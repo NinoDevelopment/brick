@@ -3,6 +3,7 @@ import { getModelToken } from "@nestjs/mongoose";
 import { ItemService } from "./item.service";
 import { Item } from "./schema/item";
 import { Category } from "../category/schema/category";
+import { MediaService } from "../media/media.service";
 
 describe("ItemService", () => {
   let service: ItemService;
@@ -12,6 +13,11 @@ describe("ItemService", () => {
     aggregate: jest.fn(),
   };
   const categoryModel = {};
+  const mediaService = {
+    persistImages: jest.fn(),
+    persistImage: jest.fn(),
+    removeEntity: jest.fn(),
+  };
 
   beforeEach(async () => {
     const module = await Test.createTestingModule({
@@ -19,6 +25,7 @@ describe("ItemService", () => {
         ItemService,
         { provide: getModelToken(Item.name), useValue: itemModel },
         { provide: getModelToken(Category.name), useValue: categoryModel },
+        { provide: MediaService, useValue: mediaService },
       ],
     }).compile();
 

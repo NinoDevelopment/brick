@@ -32,6 +32,11 @@ services:
       - "8080"
     env_file:
       - .env
+    environment:
+      UPLOAD_DIR: /app/uploads
+    volumes:
+      # mkdir -p /var/data/brick_uploads
+      - /var/data/brick_uploads:/app/uploads
 
   mongo:
     user: root

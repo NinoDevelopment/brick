@@ -6,16 +6,24 @@ import * as mongoose from "mongoose";
 import { CreateItemDto, UpdateItemDto } from "./dto/item.dto";
 import { Item, ItemDocument } from "./schema/item";
 import { Category } from "../category/schema/category";
+import { MediaService } from "../media/media.service";
 
 @Injectable()
 export class ItemService {
   constructor(
     @InjectModel(Item.name) private itemModel: Model<Item>,
     @InjectModel(Category.name) private categoryModel: Model<Category>,
+    private readonly mediaService: MediaService,
   ) {}
 
   async create(createItemDto: CreateItemDto): Promise<Item> {
-    const createdItem = new this.itemModel(createItemDto);
+    const createdItem = new this.itemModel({ ...createItemDto, images: [] });
+    await createdItem.save();
+    createdItem.images = await this.mediaService.persistImages(
+      "items",
+      createdItem._id.toString(),
+      createItemDto.images ?? [],
+    );
     return createdItem.save();
   }
 
@@ -69,7 +77,13 @@ export class ItemService {
     if (!item) return null;
     item.name = updateItemDto.name;
     item.description = updateItemDto.description;
-    item.images = updateItemDto.images;
+    if (updateItemDto.images !== undefined) {
+      item.images = await this.mediaService.persistImages(
+        "items",
+        item._id.toString(),
+        updateItemDto.images,
+      );
+    }
     item.discount = updateItemDto.discount;
     item.pack = updateItemDto.pack;
     item.available = updateItemDto.available;
@@ -86,6 +100,7 @@ export class ItemService {
   }
 
   async delete(itemIds: string[]) {
+    await Promise.all(itemIds.map((id) => this.mediaService.removeEntity("items", id)));
     await this.itemModel
       .deleteMany({ _id: { $in: itemIds.map((id) => new mongoose.Types.ObjectId(id)) } })
       .exec();

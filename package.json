@@ -20,7 +20,8 @@
     "test:pdf": "jest mail.service.spec.ts --testNamePattern='should generate PDF'",
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
-    "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand"
+    "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
+    "migrate:media": "node dist/media/migrate-media.js"
   },
   "dependencies": {
     "@a2seven/yoo-checkout": "^1.1.4",
@@ -30,6 +31,7 @@
     "@nestjs/mongoose": "^11.0.3",
     "@nestjs/platform-express": "^11.1.6",
     "@nestjs/schedule": "^6.0.1",
+    "@nestjs/serve-static": "^5.0.5",
     "@nestjs/swagger": "^11.2.0",
     "@nestjs/throttler": "^6.4.0",
     "@pdf-lib/fontkit": "^1.1.1",
@@ -43,7 +45,8 @@
     "number-to-words-ru": "^2.4.1",
     "pdf-lib": "1.17.1",
     "reflect-metadata": "^0.2.2",
-    "rxjs": "^7.8.2"
+    "rxjs": "^7.8.2",
+    "sharp": "^0.35.4"
   },
   "devDependencies": {
     "@eslint/js": "^9.35.0",
@@ -52,6 +55,7 @@
     "@nestjs/testing": "^11.1.6",
     "@types/express": "^5.0.3",
     "@types/jest": "^29.5.14",
+    "@types/multer": "^2.0.0",
     "@types/node": "^22.18.1",
     "@types/nodemailer": "^6.4.19",
     "@types/supertest": "^6.0.3",

@@ -5,13 +5,23 @@ import * as mongoose from "mongoose";
 
 import { Category } from "./schema/category";
 import { CreateCategoryDto, UpdateCategoryDto } from "./dto/category.dto";
+import { MediaService } from "../media/media.service";
 
 @Injectable()
 export class CategoryService {
-  constructor(@InjectModel(Category.name) private categoryModel: Model<Category>) {}
+  constructor(
+    @InjectModel(Category.name) private categoryModel: Model<Category>,
+    private readonly mediaService: MediaService,
+  ) {}
 
   async create(createCategoryDto: CreateCategoryDto): Promise<Category> {
-    const createdCategory = new this.categoryModel(createCategoryDto);
+    const createdCategory = new this.categoryModel({ ...createCategoryDto, image: "" });
+    await createdCategory.save();
+    createdCategory.image = await this.mediaService.persistImage(
+      "categories",
+      createdCategory._id.toString(),
+      createCategoryDto.image,
+    );
     return createdCategory.save();
   }
 
@@ -24,6 +34,7 @@ export class CategoryService {
   }
 
   async delete(categoryIds: string[]) {
+    await Promise.all(categoryIds.map((id) => this.mediaService.removeEntity("categories", id)));
     await this.categoryModel
       .deleteMany({ _id: { $in: categoryIds.map((id) => new mongoose.Types.ObjectId(id)) } })
       .exec();
@@ -35,7 +46,13 @@ export class CategoryService {
     if (!category) return null;
     category.name = updateDto.name;
     category.description = updateDto.description;
-    category.image = updateDto.image;
+    if (updateDto.image !== undefined) {
+      category.image = await this.mediaService.persistImage(
+        "categories",
+        category._id.toString(),
+        updateDto.image,
+      );
+    }
     category.hasSale = updateDto.hasSale;
     return category.save();
   }

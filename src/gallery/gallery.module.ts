@@ -4,9 +4,14 @@ import { GalleryController } from "./gallery.controller";
 import { GalleryService } from "./gallery.service";
 import { Project, ProjectSchema } from "./schema/gallery";
 import { AuthModule } from "../auth/auth.module";
+import { MediaModule } from "../media/media.module";
 
 @Module({
-  imports: [AuthModule, MongooseModule.forFeature([{ name: Project.name, schema: ProjectSchema }])],
+  imports: [
+    AuthModule,
+    MediaModule,
+    MongooseModule.forFeature([{ name: Project.name, schema: ProjectSchema }]),
+  ],
   controllers: [GalleryController],
   providers: [GalleryService],
   exports: [GalleryService],
