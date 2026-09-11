@@ -1,63 +1,49 @@
 import { Module } from "@nestjs/common";
+import { APP_GUARD } from "@nestjs/core";
 import { MongooseModule } from "@nestjs/mongoose";
-import { CategoryController } from "./category/category.controller";
-import { ItemController } from "./item/item.controller";
-import { OrderController } from "./order/order.controller";
-import { CategoryService } from "./category/category.service";
-import { ItemService } from "./item/item.service";
-import { OrderService } from "./order/order.service";
-import { Category, CategorySchema } from "./category/schema/category";
-import * as dotenv from "dotenv";
-import { Item, ItemSchema } from "./item/schema/item";
-import { Order, OrderSchema, Promocode, PromocodeSchema } from "./order/schema/order";
-import { PaymentProvider } from "./payment/payment.provider";
 import { ScheduleModule } from "@nestjs/schedule";
-import { Payment, PaymentSchema } from "./payment/schema/payment";
-import { Auth, AuthSchema } from "./auth/schema/auth";
-import { AppController } from "./app.controller";
-import { MailModule } from "./mail/mail.module";
-import { TelegramAPIModule } from "./telegram/telegram.module";
-import { CalcModule } from "./calc/calc.module";
-import { GalleryController } from "./gallery/gallery.controller";
-import { GalleryService } from "./gallery/gallery.service";
-import { Project, ProjectSchema } from "./gallery/schema/gallery";
 import { ConfigModule, ConfigService } from "@nestjs/config";
-dotenv.config();
+import { ThrottlerGuard, ThrottlerModule } from "@nestjs/throttler";
+import { CalcModule } from "./calc/calc.module";
+import { AuthModule } from "./auth/auth.module";
+import { CategoryModule } from "./category/category.module";
+import { ItemModule } from "./item/item.module";
+import { OrderModule } from "./order/order.module";
+import { GalleryModule } from "./gallery/gallery.module";
+import { PaymentModule } from "./payment/payment.module";
+import { AppController } from "./app.controller";
+import { unquote } from "./common/unquote";
 
 @Module({
   imports: [
-    ScheduleModule.forRoot(),
-    MongooseModule.forRoot(process.env["MONGO_DSN"]!),
     ConfigModule.forRoot({
       isGlobal: true,
     }),
-    MongooseModule.forFeature([
-      { name: Category.name, schema: CategorySchema },
-      { name: Item.name, schema: ItemSchema },
-      { name: Order.name, schema: OrderSchema },
-      { name: Payment.name, schema: PaymentSchema },
-      { name: Auth.name, schema: AuthSchema },
-      { name: Project.name, schema: ProjectSchema },
-      { name: Promocode.name, schema: PromocodeSchema },
-    ]),
-    MailModule,
-    TelegramAPIModule,
+    ThrottlerModule.forRoot({
+      throttlers: [{ ttl: 60000, limit: 120 }],
+    }),
+    ScheduleModule.forRoot(),
+    MongooseModule.forRootAsync({
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => ({
+        uri: unquote(config.getOrThrow("MONGO_DSN")),
+        autoIndex: true,
+      }),
+    }),
+    AuthModule,
+    CategoryModule,
+    ItemModule,
+    OrderModule,
+    PaymentModule,
+    GalleryModule,
     CalcModule,
   ],
-  controllers: [
-    CategoryController,
-    ItemController,
-    OrderController,
-    AppController,
-    GalleryController,
-  ],
+  controllers: [AppController],
   providers: [
-    ConfigService,
-    CategoryService,
-    ItemService,
-    OrderService,
-    PaymentProvider,
-    GalleryService,
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
+    },
   ],
 })
 export class AppModule {}

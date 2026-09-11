@@ -41,7 +41,9 @@ describe("AuthGuard", () => {
     const mockAuth = {
       apiKey: apiKey,
     };
-    authModel.find = jest.fn().mockReturnValue([mockAuth]);
+    authModel.find = jest.fn().mockReturnValue({
+      exec: jest.fn().mockResolvedValue([mockAuth]),
+    });
     const result = await guard.checkApiKey(request);
     expect(result).toBe(true);
   });
@@ -49,13 +51,11 @@ describe("AuthGuard", () => {
   it.skip("should generate a valid apiKey", async () => {
     const password = "live_1a6e367438327f2cf9c0d30b2f4aeac7";
     const hashedPassword = await guard.generateApiKey(password);
-    console.log(hashedPassword);
     expect(await guard.verifyKeyWithHash(password, hashedPassword)).toBe(true);
   });
 
   it.skip("should generate new password", async () => {
     const newPassword = await guard.generateNewPassword();
-    console.log(newPassword);
     expect(newPassword.startsWith("live_")).toBeTruthy();
   });
 });

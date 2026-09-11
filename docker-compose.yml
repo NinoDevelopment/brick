@@ -1,4 +1,3 @@
-version: "3.9"
 services:
   app:
     labels:
@@ -33,13 +32,10 @@ services:
       - "8080"
     env_file:
       - .env
-    #    volumes:
-    #     - /var/lib/docker/volumes/online-shop-front_data-certs/_data:/etc/nginx/ssl
-    command: ["npm", "run", "start:prod"]
 
   mongo:
     user: root
-    image: mongo:latest
+    image: mongo:8
     restart: always
     expose:
       - "27017"

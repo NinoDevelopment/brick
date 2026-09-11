@@ -12,7 +12,7 @@ export class Item {
   @Prop()
   color: string;
 
-  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: Category.name })
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: Category.name, index: true })
   categoryId: string;
 
   @Prop()
@@ -33,10 +33,10 @@ export class Item {
   @Prop({ required: true })
   available: boolean;
 
-  @Prop({ default: false })
+  @Prop({ default: false, index: true })
   isRecommendation: boolean;
 
-  @Prop({ default: true })
+  @Prop({ default: true, index: true })
   show: boolean;
 }
 

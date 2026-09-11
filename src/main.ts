@@ -2,18 +2,39 @@ import { NestFactory } from "@nestjs/core";
 import { SwaggerModule, DocumentBuilder } from "@nestjs/swagger";
 import { AppModule } from "./app.module";
 import { ValidationPipe } from "@nestjs/common";
-import { urlencoded, json } from "express";
-import * as fs from "fs";
+import { json, urlencoded } from "express";
+import helmet from "helmet";
+import { unquote } from "./common/unquote";
+
+function resolveCorsOrigin(): string | string[] | boolean {
+  const fromEnv = unquote(process.env["CORS_ORIGIN"]);
+  if (fromEnv) {
+    const origins = fromEnv
+      .split(",")
+      .map((origin) => origin.trim())
+      .filter(Boolean);
+    return origins.length === 1 ? origins[0] : origins;
+  }
+  const url = unquote(process.env["URL"]);
+  return url ? `https://${url}` : false;
+}
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
     cors: {
-      origin: "*",
+      origin: resolveCorsOrigin(),
       methods: ["GET", "HEAD", "PUT", "PATCH", "POST", "DELETE"],
-      allowedHeaders: "*",
+      allowedHeaders: ["Content-Type", "Authorization"],
       credentials: false,
     },
   });
+
+  app.use(
+    helmet({
+      contentSecurityPolicy: false,
+      crossOriginEmbedderPolicy: false,
+    }),
+  );
 
   const config = new DocumentBuilder().setTitle("API").setVersion("1.0").addTag("api").build();
 

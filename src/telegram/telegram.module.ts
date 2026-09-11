@@ -1,31 +1,11 @@
 import { Module } from "@nestjs/common";
-import { TelegramModule } from "nestjs-telegram";
-import { ConfigModule, ConfigService } from "@nestjs/config";
+import { ConfigModule } from "@nestjs/config";
 import { TelegramAPIService } from "./telegram.service";
-
-function unquote(value?: string | null): string {
-  if (!value) return "";
-  const trimmed = value.trim();
-  if (
-    (trimmed.startsWith('"') && trimmed.endsWith('"')) ||
-    (trimmed.startsWith("'") && trimmed.endsWith("'"))
-  ) {
-    return trimmed.slice(1, -1);
-  }
-  return trimmed;
-}
+import { TelegramBotClient } from "./telegram-bot.client";
 
 @Module({
-  imports: [
-    ConfigModule,
-    TelegramModule.forRootAsync({
-      useFactory: async (configService: ConfigService) => ({
-        botKey: unquote(configService.getOrThrow("TELEGRAM_API_KEY")),
-      }),
-      inject: [ConfigService],
-    }),
-  ],
-  providers: [TelegramAPIService],
+  imports: [ConfigModule],
+  providers: [TelegramBotClient, TelegramAPIService],
   exports: [TelegramAPIService],
 })
 export class TelegramAPIModule {}

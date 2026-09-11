@@ -14,11 +14,12 @@ import {
   OrderPositionDto,
   OrderStatusDto,
 } from "./dto/order.dto";
-import { Item } from "src/item/schema/item";
 import { deliveryPrice, freeDeliveryThreshold } from "./constants";
 import { MailService } from "../mail/mail.service";
 import { ItemService } from "../item/item.service";
 import { TelegramAPIService } from "../telegram/telegram.service";
+import { unquote } from "../common/unquote";
+import { isDuplicateKeyError } from "../common/mongo-errors";
 
 interface ResolvedPosition {
   itemId: string;
@@ -33,8 +34,6 @@ export class OrderService {
   constructor(
     @InjectModel(Order.name)
     private orderModel: Model<Order>,
-    @InjectModel(Item.name)
-    private itemModel: Model<Item>,
     @InjectModel(Promocode.name)
     private promocodeModel: Model<Promocode>,
     private mailProvider: MailService,
@@ -66,8 +65,7 @@ export class OrderService {
     const positions = await this.resolvePositions(dto.positions);
     const orderAmount = await this.computeFinalAmount(positions, dto.deliveryType, dto.promocode);
 
-    const order: Order = {
-      orderId: await this.generateOrderId(),
+    const order: Omit<Order, "orderId"> = {
       phoneNumber: dto.phoneNumber,
       email: dto.email,
       fullName: dto.fullName,
@@ -92,14 +90,14 @@ export class OrderService {
         : {}),
     };
 
-    const createdOrder = new this.orderModel(order);
+    const createdOrder = await this.insertOrderWithRetry(order);
 
     setImmediate(() => {
       this.mailProvider.sendOrder(createdOrder, this.itemService).catch(console.error);
       this.telegramService.sendOrder(createdOrder, this.itemService).catch(console.error);
     });
 
-    return createdOrder.save();
+    return createdOrder;
   }
 
   async calculateOrderAmount(
@@ -144,8 +142,11 @@ export class OrderService {
   }
 
   async findAll(): Promise<Order[]> {
-    const orders = await this.orderModel.find().exec();
-    return orders.filter((o) => !(o.paymentType === PaymentType.ONLINE && !o.paid));
+    return this.orderModel
+      .find({
+        $or: [{ paymentType: { $ne: PaymentType.ONLINE } }, { paid: true }],
+      })
+      .exec();
   }
 
   async findById(id: string): Promise<Order | null> {
@@ -174,23 +175,25 @@ export class OrderService {
   }
 
   private async resolvePositions(positions: OrderPositionDto[]): Promise<ResolvedPosition[]> {
-    return Promise.all(
-      positions.map(async (pos) => {
-        const item = await this.itemModel.findById(pos.itemId).exec();
-        if (!item) throw new NotFoundException(`товар ${pos.itemId} не найден`);
-        if (!item.available) {
-          throw new BadRequestException(`товар ${pos.itemId} недоступен для заказа`);
-        }
+    const ids = [...new Set(positions.map((pos) => pos.itemId))];
+    const items = await this.itemService.findByIds(ids);
+    const byId = new Map(items.map((item) => [item._id.toString(), item]));
 
-        return {
-          itemId: pos.itemId,
-          price: item.price,
-          quantity: pos.quantity,
-          pack: item.pack,
-          discount: item.discount,
-        };
-      }),
-    );
+    return positions.map((pos) => {
+      const item = byId.get(pos.itemId);
+      if (!item) throw new NotFoundException(`товар ${pos.itemId} не найден`);
+      if (!item.available) {
+        throw new BadRequestException(`товар ${pos.itemId} недоступен для заказа`);
+      }
+
+      return {
+        itemId: pos.itemId,
+        price: item.price,
+        quantity: pos.quantity,
+        pack: item.pack,
+        discount: item.discount,
+      };
+    });
   }
 
   private calculateTotals(positions: ResolvedPosition[]): {
@@ -285,7 +288,7 @@ export class OrderService {
   }
 
   private async fetchDadata<T>(url: string, body: Record<string, string>): Promise<T> {
-    const token = this.unquote(process.env["DADATA_TOKEN"]);
+    const token = unquote(process.env["DADATA_TOKEN"]);
     if (!token) {
       throw new InternalServerErrorException("Сервис автозаполнения не настроен");
     }
@@ -307,8 +310,21 @@ export class OrderService {
     return (await response.json()) as T;
   }
 
-  private unquote(value?: string): string {
-    return value?.replace(/^['"]|['"]$/g, "") ?? "";
+  private async insertOrderWithRetry(order: Omit<Order, "orderId">): Promise<OrderDocument> {
+    for (let attempt = 0; attempt < 5; attempt++) {
+      try {
+        const createdOrder = new this.orderModel({
+          ...order,
+          orderId: await this.generateOrderId(),
+        });
+        return await createdOrder.save();
+      } catch (error) {
+        if (!isDuplicateKeyError(error) || attempt === 4) {
+          throw error;
+        }
+      }
+    }
+    throw new InternalServerErrorException("Не удалось создать заказ");
   }
 
   private async generateOrderId(): Promise<string> {
@@ -320,9 +336,7 @@ export class OrderService {
       const lastOrderYear = lastOrderId.slice(0, 4);
       if (lastOrderYear === currentYear) {
         const lastOrderNumber = Number.parseInt(lastOrderId.slice(4), 10);
-        const nextOrderNumber = Number.isFinite(lastOrderNumber)
-          ? lastOrderNumber + 1
-          : 1;
+        const nextOrderNumber = Number.isFinite(lastOrderNumber) ? lastOrderNumber + 1 : 1;
         return currentYear + nextOrderNumber.toString().padStart(6, "0");
       }
     }

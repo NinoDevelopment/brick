@@ -1,36 +1,24 @@
 import { Test, TestingModule } from "@nestjs/testing";
 import { MailService } from "./mail.service";
 import { DeliveryType, PaymentType, Order } from "../order/schema/order";
-import { MailerModule } from "@nestjs-modules/mailer";
-import { ConfigModule, ConfigService } from "@nestjs/config";
+import { ConfigModule } from "@nestjs/config";
+import { SmtpMailer } from "./smtp-mailer";
+import * as fs from "fs";
+import * as path from "path";
 
 describe("MailService", () => {
   let service: MailService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      imports: [
-        ConfigModule.forRoot(),
-        MailerModule.forRootAsync({
-          imports: [ConfigModule],
-          useFactory: async (configService: ConfigService) => ({
-            transport: {
-              host: configService.get("MAIL_HOST"),
-              port: configService.get("MAIL_PORT"),
-              secure: false,
-              auth: {
-                user: configService.get("MAIL_USER"),
-                pass: configService.get("MAIL_PASSWORD"),
-              },
-            },
-            defaults: {
-              from: `"No Reply" <${configService.get("MAIL_FROM")}>`,
-            },
-          }),
-          inject: [ConfigService],
-        }),
+      imports: [ConfigModule.forRoot()],
+      providers: [
+        MailService,
+        {
+          provide: SmtpMailer,
+          useValue: { sendMail: jest.fn() },
+        },
       ],
-      providers: [MailService],
     }).compile();
 
     service = module.get<MailService>(MailService);
@@ -99,18 +87,11 @@ describe("MailService", () => {
       { itemId: "item446", name: "Кирпич рядовой", price: 15, quantity: 1500 },
     ];
 
-    await expect(service.generatePDFWithText(preparedOrder, positions)).resolves.toBeUndefined();
+    const pdfBytes = await service.generatePDFWithText(preparedOrder, positions);
+    expect(pdfBytes.subarray(0, 5).toString()).toBe("%PDF-");
 
-    const fs = require("fs") as typeof import("fs");
-    const path = require("path") as typeof import("path");
-    const outputPath = path.join(__dirname, "templates", "order.pdf");
     const samplePath = path.join(__dirname, "..", "..", "generated", "invoice-sample.pdf");
-
-    expect(fs.existsSync(outputPath)).toBe(true);
-    const pdfHeader = fs.readFileSync(outputPath).subarray(0, 5).toString();
-    expect(pdfHeader).toBe("%PDF-");
-
     fs.mkdirSync(path.dirname(samplePath), { recursive: true });
-    fs.copyFileSync(outputPath, samplePath);
+    fs.writeFileSync(samplePath, pdfBytes);
   });
 });

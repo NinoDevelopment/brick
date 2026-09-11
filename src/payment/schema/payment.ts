@@ -12,13 +12,13 @@ export type PaymentDocument = HydratedDocument<Payment>;
 
 @Schema()
 export class Payment {
-  @Prop({ required: true, type: mongoose.Schema.Types.ObjectId, ref: Order.name })
+  @Prop({ required: true, type: mongoose.Schema.Types.ObjectId, ref: Order.name, index: true })
   orderId: string;
 
   @Prop({ required: true })
   amount: number;
 
-  @Prop({ required: true })
+  @Prop({ required: true, index: true })
   status: PaymentStatus;
 
   @Prop({ required: true })
@@ -30,8 +30,9 @@ export class Payment {
   @Prop({ required: true, default: false })
   paid: boolean;
 
-  @Prop({ required: true, type: Date, default: new Date() })
+  @Prop({ required: true, type: Date, default: () => new Date() })
   createdAt: Date;
 }
 
 export const PaymentSchema = SchemaFactory.createForClass(Payment);
+PaymentSchema.index({ status: 1, orderId: 1 });

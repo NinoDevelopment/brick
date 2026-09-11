@@ -1,23 +1,22 @@
 import { Injectable } from "@nestjs/common";
-import { MailerService } from "@nestjs-modules/mailer";
+import { SmtpMailer } from "./smtp-mailer";
 import { ConfigService } from "@nestjs/config";
-import { Order, DeliveryType, PaymentType, OrderPosition } from "../order/schema/order";
+import { Order, DeliveryType, PaymentType } from "../order/schema/order";
 import { CallMeDto } from "../order/dto/order.dto";
 import { getSellerRequisites } from "../order/seller-requisites";
 import { Item } from "../item/schema/item";
-
 import { PDFDocument, PDFPage, PDFFont } from "pdf-lib";
-import * as fs from "fs";
-const fontkit = require("fontkit");
-const path = require("path");
+import { promises as fs } from "fs";
+import * as path from "path";
+import fontkit from "@pdf-lib/fontkit";
+import { convert as convertNumberToWordsRu } from "number-to-words-ru";
+import { unquote } from "../common/unquote";
 
 const templatePath = path.join(__dirname, "templates", "template.pdf");
-import { convert as convertNumberToWordsRu } from "number-to-words-ru";
 const fontPath = path.join(__dirname, "templates", "DejaVuSans.ttf");
-const outputPath = path.join(__dirname, "templates", "order.pdf");
 
 interface ItemGetter {
-  findById(id: string): Promise<Item | null>;
+  findByIds(ids: string[]): Promise<Array<Item & { _id: { toString(): string } }>>;
 }
 
 interface PreparedOrder {
@@ -45,8 +44,11 @@ interface Position {
 @Injectable()
 export class MailService {
   private readonly url: string;
-  constructor(private mailerService: MailerService, private config: ConfigService) {
-    this.url = this.config.getOrThrow("URL");
+  constructor(
+    private mailerService: SmtpMailer,
+    private config: ConfigService,
+  ) {
+    this.url = unquote(this.config.getOrThrow("URL"));
   }
 
   async prepareOrder(order: Order): Promise<PreparedOrder> {
@@ -83,7 +85,7 @@ export class MailService {
         break;
     }
 
-    const preparedOrder: PreparedOrder = {
+    return {
       orderId: order.orderId,
       deliveryAddress,
       companyInfo,
@@ -97,27 +99,26 @@ export class MailService {
       buyerEmail: order.email ? order.email : "",
       comment: order.comment ? order.comment : "Комментарий отсутствует",
     };
-    // await this.generatePDFWithText(preparedOrder, order.positions); для тестов
-    return preparedOrder;
   }
 
   async sendOrder(order: Order, itemGetter: ItemGetter) {
     try {
       console.log("try sendOrder");
-      const positions: Position[] = await Promise.all(
-        order.positions.map(async (position, i) => {
-          const item = await itemGetter.findById(position.itemId);
-          const discountPercent = item?.discount || 0;
-          const discount = position.price * (discountPercent / 100);
-          const discountedPrice = position.price - discount;
-          return {
-            itemId: position.itemId,
-            name: item?.name || `Товар ${i + 1}`,
-            price: discountedPrice >= 0 ? discountedPrice : 0,
-            quantity: position.quantity,
-          };
-        }),
-      );
+      const items = await itemGetter.findByIds(order.positions.map((position) => position.itemId));
+      const itemsById = new Map(items.map((item) => [item._id.toString(), item]));
+
+      const positions: Position[] = order.positions.map((position, i) => {
+        const item = itemsById.get(position.itemId);
+        const discountPercent = item?.discount || 0;
+        const discount = position.price * (discountPercent / 100);
+        const discountedPrice = position.price - discount;
+        return {
+          itemId: position.itemId,
+          name: item?.name || `Товар ${i + 1}`,
+          price: discountedPrice >= 0 ? discountedPrice : 0,
+          quantity: position.quantity,
+        };
+      });
 
       const preparedOrder = await this.prepareOrder(order);
       const url = this.url ? `https://${this.url}` : "";
@@ -131,13 +132,13 @@ export class MailService {
         ...preparedOrder,
         sellerRequisites,
       };
-      const attachments = [];
+      const attachments: Array<{ filename: string; content: Buffer; contentType: string }> = [];
       if (order.paymentType === PaymentType.SCHET) {
         try {
-          await this.generatePDFWithText(preparedOrder, positions);
+          const pdfBuffer = await this.generatePDFWithText(preparedOrder, positions);
           attachments.push({
             filename: "order.pdf",
-            path: outputPath,
+            content: pdfBuffer,
             contentType: "application/pdf",
           });
         } catch (error) {
@@ -164,8 +165,6 @@ export class MailService {
         },
         attachments,
       });
-
-      if (fs.existsSync(outputPath)) fs.unlinkSync(outputPath);
     } catch (error) {
       const details =
         error instanceof Error ? { message: error.message, stack: error.stack } : error;
@@ -208,10 +207,7 @@ export class MailService {
   }
 
   private getAdminRecipients(): string[] {
-    return this.config
-      .getOrThrow("ADMIN_MAIL")
-      .toString()
-      .replace(/^["']|["']$/g, "")
+    return unquote(this.config.getOrThrow("ADMIN_MAIL"))
       .split("|")
       .map((email: string) => email.trim())
       .filter(Boolean);
@@ -233,158 +229,148 @@ export class MailService {
     return date.toLocaleString("ru-RU", options);
   }
 
-  public async generatePDFWithText(order: PreparedOrder, positions: Position[]): Promise<void> {
-    try {
-      if (!fs.existsSync(templatePath) || !fs.existsSync(fontPath)) {
-        throw new Error("Template or font file not found");
-      }
+  public async generatePDFWithText(order: PreparedOrder, positions: Position[]): Promise<Buffer> {
+    const templateBytes = new Uint8Array(await fs.readFile(templatePath));
+    const pdfDoc = await PDFDocument.load(templateBytes);
+    pdfDoc.registerFontkit(fontkit);
 
-      const templateBytes = new Uint8Array(fs.readFileSync(templatePath));
-      const pdfDoc = await PDFDocument.load(templateBytes);
-      pdfDoc.registerFontkit(fontkit);
+    const fontBytes = new Uint8Array(await fs.readFile(fontPath));
+    const dejavuSansFont = await pdfDoc.embedFont(fontBytes);
+    const page = pdfDoc.getPages()[0];
 
-      const fontBytes = new Uint8Array(fs.readFileSync(fontPath));
-      const dejavuSansFont = await pdfDoc.embedFont(fontBytes);
-      const page = pdfDoc.getPages()[0];
+    const totalCosts = positions.map((position) => ({
+      itemId: position.itemId,
+      totalCost: position.price * position.quantity,
+    }));
 
-      const totalCosts = positions.map((position) => ({
-        itemId: position.itemId,
-        totalCost: position.price * position.quantity,
-      }));
+    this.drawWrappedText(page, order.orderId, {
+      x: 165,
+      y: 707,
+      maxWidth: 450,
+      lineHeight: 9,
+      font: dejavuSansFont,
+      fontSize: 12,
+    });
 
-      this.drawWrappedText(page, order.orderId, {
-        x: 165,
-        y: 707,
+    this.drawWrappedText(page, this.getMoscowDateTimeString(new Date(), false), {
+      x: 300,
+      y: 707,
+      maxWidth: 450,
+      lineHeight: 9,
+      font: dejavuSansFont,
+      fontSize: 12,
+    });
+
+    this.drawWrappedText(page, order.companyInfo, {
+      x: 100,
+      y: 653,
+      maxWidth: 450,
+      lineHeight: 9,
+      font: dejavuSansFont,
+    });
+
+    this.drawWrappedText(page, positions.length.toString(), {
+      x: 130,
+      y: 470,
+      maxWidth: 450,
+      lineHeight: 9,
+      font: dejavuSansFont,
+    });
+
+    const totalCostSum = totalCosts.reduce((sum, position) => sum + position.totalCost, 0);
+    const totalCostSumNDS = (totalCostSum * 20) / 120;
+    const totalCostSumWord = convertNumberToWordsRu(totalCostSum);
+    const formattedTotalCostSum = totalCostSum.toLocaleString("ru-RU", {
+      style: "currency",
+      currency: "RUB",
+    });
+    const formattedTotalCostSumNDS = totalCostSumNDS.toLocaleString("ru-RU", {
+      style: "currency",
+      currency: "RUB",
+    });
+    this.drawWrappedText(page, formattedTotalCostSum, {
+      x: 190,
+      y: 470,
+      maxWidth: 450,
+      lineHeight: 9,
+      font: dejavuSansFont,
+    });
+    this.drawWrappedText(page, formattedTotalCostSum, {
+      x: 450,
+      y: 504,
+      maxWidth: 450,
+      lineHeight: 9,
+      font: dejavuSansFont,
+    });
+    this.drawWrappedText(page, formattedTotalCostSumNDS, {
+      x: 450,
+      y: 492.5,
+      maxWidth: 450,
+      lineHeight: 9,
+      font: dejavuSansFont,
+    });
+    this.drawWrappedText(page, formattedTotalCostSum, {
+      x: 450,
+      y: 481,
+      maxWidth: 450,
+      lineHeight: 9,
+      font: dejavuSansFont,
+    });
+    this.drawWrappedText(page, totalCostSumWord, {
+      x: 35,
+      y: 458.5,
+      maxWidth: 450,
+      lineHeight: 9,
+      font: dejavuSansFont,
+    });
+
+    for (let i = 0; i <= positions.length - 1; i++) {
+      this.drawWrappedText(page, positions[i].name, {
+        x: 70,
+        y: 595 - i * 10.5,
         maxWidth: 450,
         lineHeight: 9,
         font: dejavuSansFont,
-        fontSize: 12,
       });
 
-      this.drawWrappedText(page, this.getMoscowDateTimeString(new Date(), false), {
+      this.drawWrappedText(page, positions[i].quantity.toString(), {
         x: 300,
-        y: 707,
-        maxWidth: 450,
-        lineHeight: 9,
-        font: dejavuSansFont,
-        fontSize: 12,
-      });
-
-      this.drawWrappedText(page, order.companyInfo, {
-        x: 100,
-        y: 653,
+        y: 595 - i * 10.5,
         maxWidth: 450,
         lineHeight: 9,
         font: dejavuSansFont,
       });
 
-      this.drawWrappedText(page, positions.length.toString(), {
-        x: 130,
-        y: 470,
-        maxWidth: 450,
-        lineHeight: 9,
-        font: dejavuSansFont,
-      });
-
-      const totalCostSum = totalCosts.reduce((sum, position) => sum + position.totalCost, 0);
-      const totalCostSumNDS = (totalCostSum * 20) / 120;
-      const totalCostSumWord = convertNumberToWordsRu(totalCostSum);
-      const formattedTotalCostSum = totalCostSum.toLocaleString("ru-RU", {
+      const positionCost = positions[i].price.toLocaleString("ru-RU", {
         style: "currency",
         currency: "RUB",
       });
-      const formattedTotalCostSumNDS = totalCostSumNDS.toLocaleString("ru-RU", {
+      this.drawWrappedText(page, positionCost, {
+        x: 380,
+        y: 595 - i * 10.5,
+        maxWidth: 450,
+        lineHeight: 9,
+        font: dejavuSansFont,
+      });
+
+      const positionTotalCost = totalCosts[i].totalCost.toLocaleString("ru-RU", {
         style: "currency",
         currency: "RUB",
       });
-      this.drawWrappedText(page, formattedTotalCostSum, {
-        x: 190,
-        y: 470,
-        maxWidth: 450,
-        lineHeight: 9,
-        font: dejavuSansFont,
-      });
-      this.drawWrappedText(page, formattedTotalCostSum, {
+      this.drawWrappedText(page, positionTotalCost, {
         x: 450,
-        y: 504,
+        y: 595 - i * 10.5,
         maxWidth: 450,
         lineHeight: 9,
         font: dejavuSansFont,
       });
-      this.drawWrappedText(page, formattedTotalCostSumNDS, {
-        x: 450,
-        y: 492.5,
-        maxWidth: 450,
-        lineHeight: 9,
-        font: dejavuSansFont,
-      });
-      this.drawWrappedText(page, formattedTotalCostSum, {
-        x: 450,
-        y: 481,
-        maxWidth: 450,
-        lineHeight: 9,
-        font: dejavuSansFont,
-      });
-      this.drawWrappedText(page, totalCostSumWord, {
-        x: 35,
-        y: 458.5,
-        maxWidth: 450,
-        lineHeight: 9,
-        font: dejavuSansFont,
-      });
-
-      for (let i = 0; i <= positions.length - 1; i++) {
-        this.drawWrappedText(page, positions[i].name, {
-          x: 70,
-          y: 595 - i * 10.5,
-          maxWidth: 450,
-          lineHeight: 9,
-          font: dejavuSansFont,
-        });
-
-        this.drawWrappedText(page, positions[i].quantity.toString(), {
-          x: 300,
-          y: 595 - i * 10.5,
-          maxWidth: 450,
-          lineHeight: 9,
-          font: dejavuSansFont,
-        });
-
-        const positionCost = positions[i].price.toLocaleString("ru-RU", {
-          style: "currency",
-          currency: "RUB",
-        });
-        this.drawWrappedText(page, positionCost, {
-          x: 380,
-          y: 595 - i * 10.5,
-          maxWidth: 450,
-          lineHeight: 9,
-          font: dejavuSansFont,
-        });
-
-        const positionTotalCost = totalCosts[i].totalCost.toLocaleString("ru-RU", {
-          style: "currency",
-          currency: "RUB",
-        });
-        this.drawWrappedText(page, positionTotalCost, {
-          x: 450,
-          y: 595 - i * 10.5,
-          maxWidth: 450,
-          lineHeight: 9,
-          font: dejavuSansFont,
-        });
-      }
-
-      const modifiedPdfBytes = await pdfDoc.save();
-      fs.writeFileSync(outputPath, modifiedPdfBytes);
-
-      console.log("PDF generated successfully");
-    } catch (error) {
-      throw new Error();
     }
+
+    const modifiedPdfBytes = await pdfDoc.save();
+    return Buffer.from(modifiedPdfBytes);
   }
 
-  private async drawWrappedText(
+  private drawWrappedText(
     page: PDFPage,
     text: string,
     options: {
@@ -395,7 +381,7 @@ export class MailService {
       font: PDFFont;
       fontSize?: number;
     },
-  ): Promise<void> {
+  ): void {
     const words = text.split(" ");
     let currentLine = "";
     let currentY = options.y;

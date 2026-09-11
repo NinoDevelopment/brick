@@ -1,5 +1,4 @@
 import {
-  ArrayNotEmpty,
   IsArray,
   IsBoolean,
   IsMongoId,
@@ -9,7 +8,6 @@ import {
   IsPositive,
   IsString,
   Min,
-  ValidateNested,
 } from "class-validator";
 
 export class CreateItemDto {

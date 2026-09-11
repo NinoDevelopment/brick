@@ -12,6 +12,7 @@ import { Cron, CronExpression } from "@nestjs/schedule";
 import { YooCheckout, ICreatePayment } from "@a2seven/yoo-checkout";
 import { OrderService } from "src/order/order.service";
 import { ConfigService } from "@nestjs/config";
+import { unquote } from "../common/unquote";
 
 @Injectable()
 export class PaymentProvider {
@@ -24,13 +25,13 @@ export class PaymentProvider {
     @InjectModel(Payment.name) private paymentModel: Model<Payment>,
     private config: ConfigService,
   ) {
-    const shopId = this.unquote(process.env["KASSA_SHOP_ID"]);
-    const secretKey = this.unquote(process.env["KASSA_API_KEY"]);
+    const shopId = unquote(this.config.get("KASSA_SHOP_ID"));
+    const secretKey = unquote(this.config.get("KASSA_API_KEY"));
     if (!shopId || !secretKey) {
       throw new Error("KASSA_SHOP_ID / KASSA_API_KEY не заданы");
     }
     this.yooCheckout = new YooCheckout({ shopId, secretKey });
-    this.url = this.unquote(this.config.getOrThrow("URL"));
+    this.url = unquote(this.config.getOrThrow("URL"));
   }
 
   async create(orderId: string): Promise<Payment> {
@@ -84,18 +85,6 @@ export class PaymentProvider {
 
     const payment = new this.paymentModel(paymentToCreate);
     return payment.save();
-  }
-
-  private unquote(value?: string | null): string {
-    if (!value) return "";
-    const trimmed = value.trim();
-    if (
-      (trimmed.startsWith('"') && trimmed.endsWith('"')) ||
-      (trimmed.startsWith("'") && trimmed.endsWith("'"))
-    ) {
-      return trimmed.slice(1, -1);
-    }
-    return trimmed;
   }
 
   private extractYooError(error: unknown): Record<string, unknown> {

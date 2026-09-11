@@ -8,7 +8,7 @@ export type PromocodeDocument = HydratedDocument<Promocode>;
 
 @Schema()
 export class Promocode {
-  @Prop({ required: true })
+  @Prop({ required: true, unique: true })
   code: string;
 
   @Prop({ required: true })
@@ -88,7 +88,7 @@ export type OrderDocument = HydratedDocument<Order>;
 
 @Schema()
 export class Order {
-  @Prop()
+  @Prop({ unique: true })
   orderId: string;
 
   @Prop({ required: true })
@@ -115,7 +115,7 @@ export class Order {
   @Prop({ required: true })
   amount: number;
 
-  @Prop({ required: true, type: Date, default: new Date() })
+  @Prop({ required: true, type: Date, default: () => new Date() })
   createdAt: Date;
 
   @Prop()
@@ -137,3 +137,4 @@ export class Order {
   schetInfo?: SchetInfo;
 }
 export const OrderSchema = SchemaFactory.createForClass(Order);
+OrderSchema.index({ createdAt: -1 });

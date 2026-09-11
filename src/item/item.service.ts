@@ -4,7 +4,7 @@ import { Model } from "mongoose";
 import * as mongoose from "mongoose";
 
 import { CreateItemDto, UpdateItemDto } from "./dto/item.dto";
-import { Item } from "./schema/item";
+import { Item, ItemDocument } from "./schema/item";
 import { Category } from "../category/schema/category";
 
 @Injectable()
@@ -23,8 +23,16 @@ export class ItemService {
     return this.itemModel.find().select("-images").exec();
   }
 
-  async findById(id: string): Promise<Item | null> {
+  async findById(id: string): Promise<ItemDocument | null> {
     return this.itemModel.findById(id).select("-images").exec();
+  }
+
+  async findByIds(ids: string[]): Promise<ItemDocument[]> {
+    if (ids.length === 0) return [];
+    return this.itemModel
+      .find({ _id: { $in: ids } })
+      .select("-images")
+      .exec();
   }
 
   async findByCategoryId(categoryId: string): Promise<Item[]> {
@@ -32,21 +40,28 @@ export class ItemService {
   }
 
   async findRandom(count: number): Promise<Item[]> {
-    const items = await this.itemModel.find({ show: true }).select("-images").exec();
-    shuffleArray(items);
-    return items.length > count ? items.slice(0, count) : items;
+    const size = Math.max(0, Math.trunc(count));
+    if (size === 0) return [];
+    return this.itemModel.aggregate<Item>([
+      { $match: { show: true } },
+      { $sample: { size } },
+      { $project: { images: 0 } },
+    ]);
   }
 
   async findRecommendations(count: number): Promise<Item[]> {
-    const items = await this.itemModel.find({ isRecommendation: true }).select("-images").exec();
-    shuffleArray(items);
-    return items.length > count ? items.slice(0, count) : items;
+    const size = Math.max(0, Math.trunc(count));
+    if (size === 0) return [];
+    return this.itemModel.aggregate<Item>([
+      { $match: { isRecommendation: true } },
+      { $sample: { size } },
+      { $project: { images: 0 } },
+    ]);
   }
 
   async findImages(itemId: string): Promise<string[]> {
-    const results = this.itemModel.findOne({ _id: itemId }).select("images").exec();
-    if (!results) return [];
-    return results as unknown as string[];
+    const item = await this.itemModel.findById(itemId).select("images").exec();
+    return item?.images ?? [];
   }
 
   async update(updateItemDto: UpdateItemDto): Promise<Item | null> {
@@ -75,14 +90,5 @@ export class ItemService {
       .deleteMany({ _id: { $in: itemIds.map((id) => new mongoose.Types.ObjectId(id)) } })
       .exec();
     return itemIds;
-  }
-}
-
-function shuffleArray<T>(array: Array<T>) {
-  for (let i = array.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    const temp = array[i];
-    array[i] = array[j];
-    array[j] = temp;
   }
 }

@@ -9,6 +9,7 @@ import {
   Put,
   UseGuards,
 } from "@nestjs/common";
+import { Throttle } from "@nestjs/throttler";
 import { OrderService } from "./order.service";
 import { Order, Promocode } from "./schema/order";
 import {
@@ -22,7 +23,6 @@ import {
   LookupInnDto,
   OrderStatusDto,
 } from "./dto/order.dto";
-import { PaymentProvider } from "src/payment/payment.provider";
 import { AuthGuard } from "src/auth/auth.guard";
 import { TelegramAPIService } from "src/telegram/telegram.service";
 import { MailService } from "src/mail/mail.service";
@@ -31,11 +31,11 @@ import { MailService } from "src/mail/mail.service";
 export class OrderController {
   constructor(
     private orderService: OrderService,
-    private paymentProvider: PaymentProvider,
     private tegramProvider: TelegramAPIService,
     private mailProvider: MailService,
   ) {}
 
+  @Throttle({ default: { limit: 10, ttl: 60000 } })
   @Post()
   async create(@Body() createOrderDto: CreateOrderDto): Promise<Order> {
     return this.orderService.create(createOrderDto);
@@ -65,19 +65,7 @@ export class OrderController {
     return this.orderService.findAll();
   }
 
-  @Get(":id")
-  async findOne(@Param() params: FindOneParams): Promise<OrderStatusDto> {
-    const order = await this.orderService.findPublicStatus(params.id);
-    if (!order) throw new NotFoundException("заказ не найден");
-    return order;
-  }
-
-  @Post("/plati/:id")
-  async payForOrder(@Param() params: FindOneParams): Promise<{ confirmationURL: string }> {
-    const payment = await this.paymentProvider.create(params.id);
-    return { confirmationURL: payment.confirmURL };
-  }
-
+  @Throttle({ default: { limit: 5, ttl: 60000 } })
   @Post("/callme")
   async callMe(@Body() req: CallMeDto): Promise<{ success: boolean }> {
     setImmediate(() => {
@@ -94,7 +82,6 @@ export class OrderController {
   @Post("all-promocodes")
   @UseGuards(AuthGuard)
   async getPromocodes(): Promise<Promocode[]> {
-    console.log("order/promocode");
     return await this.orderService.getPromocodes();
   }
 
@@ -108,5 +95,12 @@ export class OrderController {
   @UseGuards(AuthGuard)
   async removePromocode(@Param("code") code: string): Promise<{ success: boolean }> {
     return { success: await this.orderService.removePromocode(code) };
+  }
+
+  @Get(":id")
+  async findOne(@Param() params: FindOneParams): Promise<OrderStatusDto> {
+    const order = await this.orderService.findPublicStatus(params.id);
+    if (!order) throw new NotFoundException("заказ не найден");
+    return order;
   }
 }

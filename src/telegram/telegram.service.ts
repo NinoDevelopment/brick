@@ -1,34 +1,31 @@
 import { Injectable } from "@nestjs/common";
-import { TelegramMessage, TelegramService, TelegramUser } from "nestjs-telegram";
+import { ConfigService } from "@nestjs/config";
 import { DeliveryType, Order, PaymentType } from "../order/schema/order";
 import { Item } from "../item/schema/item";
 import { CallMeDto } from "../order/dto/order.dto";
-import { ConfigService } from "@nestjs/config";
+import { TelegramBotClient, TelegramMessage, TelegramUser } from "./telegram-bot.client";
+import { unquote } from "../common/unquote";
 
 interface ItemGetter {
-  findById(id: string): Promise<Item | null>;
+  findByIds(ids: string[]): Promise<Array<Item & { _id: { toString(): string } }>>;
 }
+
 @Injectable()
 export class TelegramAPIService {
   private readonly url: string;
-  constructor(private config: ConfigService, private readonly bot: TelegramService) {
-    const rawUrl = this.config.getOrThrow("URL").toString().trim();
-    this.url =
-      (rawUrl.startsWith('"') && rawUrl.endsWith('"')) ||
-      (rawUrl.startsWith("'") && rawUrl.endsWith("'"))
-        ? rawUrl.slice(1, -1)
-        : rawUrl;
+  constructor(
+    private config: ConfigService,
+    private readonly bot: TelegramBotClient,
+  ) {
+    this.url = unquote(this.config.getOrThrow("URL"));
   }
 
   testBot(): Promise<TelegramUser> {
-    return this.bot.getMe().toPromise();
+    return this.bot.getMe();
   }
 
   private chatIds(): string[] {
-    return this.config
-      .getOrThrow("TELEGRAM_CHAT_IDS")
-      .toString()
-      .replace(/^["']|["']$/g, "")
+    return unquote(this.config.getOrThrow("TELEGRAM_CHAT_IDS"))
       .split(",")
       .map((id: string) => id.trim())
       .filter(Boolean);
@@ -38,34 +35,32 @@ export class TelegramAPIService {
     const chats = this.chatIds();
     return Promise.all(
       chats.map((chat_id: string) =>
-        this.bot
-          .sendMessage({
-            chat_id: chat_id,
-            text: `Запроc на связь от пользователя
+        this.bot.sendMessage({
+          chat_id,
+          text: `Запроc на связь от пользователя
 Имя: ${req.name}
 Телефон: ${req.phoneNumber}
 Компания: ${req.companyName}
 Email: ${req.email}
 Текст: ${req.text}`,
-          })
-          .toPromise(),
+        }),
       ),
     );
   }
 
   async sendOrder(order: Order, itemGetter: ItemGetter): Promise<TelegramMessage[]> {
     const chats = this.chatIds();
+    const items = await itemGetter.findByIds(order.positions.map((position) => position.itemId));
+    const itemsById = new Map(items.map((item) => [item._id.toString(), item]));
 
-    const positions = await Promise.all(
-      order.positions.map(async (position) => {
-        const item = await itemGetter.findById(position.itemId);
-        if (item === null) return "";
-        return `*Товар:* [${item.name}](https://${this.url}/product/${position.itemId})
+    const positions = order.positions.map((position) => {
+      const item = itemsById.get(position.itemId);
+      if (!item) return "";
+      return `*Товар:* [${item.name}](https://${this.url}/product/${position.itemId})
 *Кол-во:* ${position.quantity} шт.
 
 `;
-      }),
-    );
+    });
     const oa = order.address;
 
     const deliveryAddress =
@@ -111,11 +106,11 @@ Email: ${req.email}
 
     return Promise.all(
       chats.map((chat_id: string) =>
-        this.bot
-          .sendMessage({
-            chat_id: chat_id,
-            disable_web_page_preview: true,
-            text: `*Информация о заказе:*
+        this.bot.sendMessage({
+          chat_id,
+          disable_web_page_preview: true,
+          parse_mode: "Markdown",
+          text: `*Информация о заказе:*
 *Номер заказа:* ${params.orderId}
 *Дата:* ${params.orderDate}
 *Сумма:* ${params.orderSum}
@@ -133,9 +128,7 @@ Email: ${req.email}
 *Товары:*
 ${params.positions}
 `,
-            parse_mode: "markdown",
-          })
-          .toPromise(),
+        }),
       ),
     );
   }

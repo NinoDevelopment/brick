@@ -1,3 +1,5 @@
+import { unquote } from "../common/unquote";
+
 export interface SellerRequisites {
   companyName: string;
   inn: string;
@@ -7,10 +9,6 @@ export interface SellerRequisites {
   bic: string;
   correspondentAccount: string;
   receiverAccount: string;
-}
-
-function unquote(value?: string): string {
-  return value?.replace(/^['"]|['"]$/g, "") ?? "";
 }
 
 const DEFAULT_SELLER: SellerRequisites = {

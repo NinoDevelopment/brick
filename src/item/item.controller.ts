@@ -35,26 +35,26 @@ export class ItemController {
     return this.itemService.findByCategoryId(param.categoryId);
   }
 
+  @Get("sample/:size")
+  async findSample(@Param() params: FindSampleParams): Promise<Item[]> {
+    return this.itemService.findRandom(parseInt(params.size, 10));
+  }
+
+  @Get("recommendations/:size")
+  async findRecommendations(@Param() params: FindSampleParams): Promise<Item[]> {
+    return this.itemService.findRecommendations(parseInt(params.size, 10));
+  }
+
+  @Get("images/:id")
+  async findImages(@Param() param: FindOneParams): Promise<string[]> {
+    return this.itemService.findImages(param.id);
+  }
+
   @Get(":id")
   async findOne(@Param() param: FindOneParams): Promise<Item> {
     const item = await this.itemService.findById(param.id);
     if (item === null) throw new NotFoundException("товар не найден");
     return item;
-  }
-
-  @Get("sample/:size")
-  async findSample(@Param() params: FindSampleParams): Promise<Item[]> {
-    return this.itemService.findRandom(parseInt(params.size));
-  }
-
-  @Get("recommendations/:size")
-  async findRecommendations(@Param() params: FindSampleParams): Promise<Item[]> {
-    return this.itemService.findRecommendations(parseInt(params.size));
-  }
-
-  @Get("/images/:id")
-  async findImages(@Param() param: FindOneParams): Promise<string[]> {
-    return this.itemService.findImages(param.id);
   }
 
   @Post()
