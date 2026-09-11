@@ -7,7 +7,9 @@ COPY package.json package-lock.json ./
 RUN npm ci
 
 COPY . .
-RUN npm run build \
+RUN rm -f tsconfig*.tsbuildinfo \
+  && npm run build \
+  && test -f dist/media/migrate-media.js \
   && npm prune --omit=dev
 
 FROM node:22.22.1-alpine AS runtime
