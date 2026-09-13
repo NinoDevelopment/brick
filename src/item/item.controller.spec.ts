@@ -71,6 +71,23 @@ describe("ItemController", () => {
     expect(itemService.findById).not.toHaveBeenCalled();
   });
 
+  it("GET /item keeps the list endpoint and includes service payload with images", async () => {
+    const items = [{ _id: mongoId, name: "brick", images: ["https://cdn/a.webp"] }];
+    itemService.findAll.mockResolvedValue(items);
+
+    const res = await request(app.getHttpServer()).get("/item").expect(200);
+    expect(res.body).toEqual(items);
+    expect(itemService.findAll).toHaveBeenCalled();
+  });
+
+  it("GET /item/:id returns images with the item", async () => {
+    const item = { _id: mongoId, name: "brick", images: ["https://cdn/a.webp"] };
+    itemService.findById.mockResolvedValue(item);
+
+    const res = await request(app.getHttpServer()).get(`/item/${mongoId}`).expect(200);
+    expect(res.body).toEqual(item);
+  });
+
   it("POST /item accepts CMS text that JSON-LD must encode", async () => {
     const payload = {
       name: "</script><script>alert(1)</script>",

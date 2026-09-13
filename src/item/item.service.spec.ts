@@ -50,4 +50,50 @@ describe("ItemService", () => {
     });
     await expect(service.findImages("id")).resolves.toEqual({ _id: "id", images: [] });
   });
+
+  it("findAll returns items with images instead of N+1 /images/:id lookups", async () => {
+    const items = [{ _id: "1", name: "brick", images: ["https://cdn/a.webp"] }];
+    const query = { select: jest.fn(), exec: jest.fn().mockResolvedValue(items) };
+    itemModel.find.mockReturnValue(query);
+
+    await expect(service.findAll()).resolves.toEqual(items);
+    expect(query.select).not.toHaveBeenCalled();
+  });
+
+  it("findById returns images with the item", async () => {
+    const item = { _id: "id", images: ["https://cdn/a.webp"] };
+    const query = { select: jest.fn(), exec: jest.fn().mockResolvedValue(item) };
+    itemModel.findById.mockReturnValue(query);
+
+    await expect(service.findById("id")).resolves.toEqual(item);
+    expect(query.select).not.toHaveBeenCalled();
+  });
+
+  it("findByCategoryId returns images with items", async () => {
+    const items = [{ _id: "1", categoryId: "c", images: ["https://cdn/a.webp"] }];
+    const query = { select: jest.fn(), exec: jest.fn().mockResolvedValue(items) };
+    itemModel.find.mockReturnValue(query);
+
+    await expect(service.findByCategoryId("c")).resolves.toEqual(items);
+    expect(itemModel.find).toHaveBeenCalledWith({ categoryId: "c" });
+    expect(query.select).not.toHaveBeenCalled();
+  });
+
+  it("findRandom does not strip images", async () => {
+    itemModel.aggregate.mockResolvedValue([{ images: ["https://cdn/a.webp"] }]);
+    await service.findRandom(2);
+    expect(itemModel.aggregate).toHaveBeenCalledWith([
+      { $match: { show: true } },
+      { $sample: { size: 2 } },
+    ]);
+  });
+
+  it("findRecommendations does not strip images", async () => {
+    itemModel.aggregate.mockResolvedValue([{ images: ["https://cdn/a.webp"] }]);
+    await service.findRecommendations(1);
+    expect(itemModel.aggregate).toHaveBeenCalledWith([
+      { $match: { isRecommendation: true } },
+      { $sample: { size: 1 } },
+    ]);
+  });
 });

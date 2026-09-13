@@ -2,7 +2,7 @@ import { NestFactory } from "@nestjs/core";
 import { SwaggerModule, DocumentBuilder } from "@nestjs/swagger";
 import { AppModule } from "./app.module";
 import { ValidationPipe } from "@nestjs/common";
-import { json, urlencoded } from "express";
+import { json, urlencoded, type NextFunction, type Request, type Response } from "express";
 import helmet from "helmet";
 import { unquote } from "./common/unquote";
 
@@ -35,6 +35,13 @@ async function bootstrap() {
       crossOriginEmbedderPolicy: false,
     }),
   );
+  app.use((_req: Request, res: Response, next: NextFunction) => {
+    res.setHeader(
+      "Permissions-Policy",
+      "camera=(), microphone=(), geolocation=(), payment=(), usb=()",
+    );
+    next();
+  });
 
   const config = new DocumentBuilder().setTitle("API").setVersion("1.0").addTag("api").build();
 

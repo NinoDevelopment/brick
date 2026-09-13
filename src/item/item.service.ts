@@ -28,11 +28,11 @@ export class ItemService {
   }
 
   async findAll(): Promise<Item[]> {
-    return this.itemModel.find().select("-images").exec();
+    return this.itemModel.find().exec();
   }
 
   async findById(id: string): Promise<ItemDocument | null> {
-    return this.itemModel.findById(id).select("-images").exec();
+    return this.itemModel.findById(id).exec();
   }
 
   async findByIds(ids: string[]): Promise<ItemDocument[]> {
@@ -44,17 +44,13 @@ export class ItemService {
   }
 
   async findByCategoryId(categoryId: string): Promise<Item[]> {
-    return this.itemModel.find({ categoryId: categoryId }).select("-images").exec();
+    return this.itemModel.find({ categoryId: categoryId }).exec();
   }
 
   async findRandom(count: number): Promise<Item[]> {
     const size = Math.max(0, Math.trunc(count));
     if (size === 0) return [];
-    return this.itemModel.aggregate<Item>([
-      { $match: { show: true } },
-      { $sample: { size } },
-      { $project: { images: 0 } },
-    ]);
+    return this.itemModel.aggregate<Item>([{ $match: { show: true } }, { $sample: { size } }]);
   }
 
   async findRecommendations(count: number): Promise<Item[]> {
@@ -63,7 +59,6 @@ export class ItemService {
     return this.itemModel.aggregate<Item>([
       { $match: { isRecommendation: true } },
       { $sample: { size } },
-      { $project: { images: 0 } },
     ]);
   }
 
