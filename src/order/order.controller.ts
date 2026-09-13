@@ -7,6 +7,7 @@ import {
   Param,
   Post,
   Put,
+  Query,
   UseGuards,
 } from "@nestjs/common";
 import { Throttle } from "@nestjs/throttler";
@@ -98,8 +99,12 @@ export class OrderController {
   }
 
   @Get(":id")
-  async findOne(@Param() params: FindOneParams): Promise<OrderStatusDto> {
-    const order = await this.orderService.findPublicStatus(params.id);
+  @Throttle({ default: { limit: 30, ttl: 60000 } })
+  async findOne(
+    @Param() params: FindOneParams,
+    @Query("token") token?: string,
+  ): Promise<OrderStatusDto> {
+    const order = await this.orderService.findPublicStatus(params.id, token);
     if (!order) throw new NotFoundException("заказ не найден");
     return order;
   }

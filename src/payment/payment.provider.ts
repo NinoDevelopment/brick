@@ -56,7 +56,9 @@ export class PaymentProvider {
       },
       confirmation: {
         type: "redirect",
-        return_url: `https://${this.url}/order/status/${orderId}`,
+        return_url: order.accessToken
+          ? `https://${this.url}/order/status/${orderId}?token=${encodeURIComponent(order.accessToken)}`
+          : `https://${this.url}/order/status/${orderId}`,
       },
       capture: true,
       description: `Платеж за заказ №${order.orderId} на сумму ${order.amount}`,

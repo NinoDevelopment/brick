@@ -48,6 +48,41 @@ describe("AuthGuard", () => {
     expect(result).toBe(true);
   });
 
+  it("should return true if matching apiKey is sent in cookie", async () => {
+    const password = "live_1a6e367438327f2cf9c0d30b2f4aeac7";
+    const apiKey =
+      "$argon2id$v=19$m=64000,t=3,p=1$2IbVQxRSJOHC5ogg70uqsQ$4oOHqflmaKDMsjP1TYgTjtHs0/PUl1c63a5YK/fLsvM";
+    const request = {
+      headers: {
+        cookie: `kzk_admin=${password}`,
+      },
+    };
+    authModel.find = jest.fn().mockReturnValue({
+      exec: jest.fn().mockResolvedValue([{ apiKey }]),
+    });
+    const result = await guard.checkApiKey(request);
+    expect(result).toBe(true);
+  });
+
+  it("should reject missing credentials", async () => {
+    await expect(guard.checkApiKey({ headers: {} })).rejects.toThrow("не авторизован");
+  });
+
+  it("should reject an invalid apiKey", async () => {
+    authModel.find = jest.fn().mockReturnValue({
+      exec: jest.fn().mockResolvedValue([
+        {
+          apiKey:
+            "$argon2id$v=19$m=64000,t=3,p=1$2IbVQxRSJOHC5ogg70uqsQ$4oOHqflmaKDMsjP1TYgTjtHs0/PUl1c63a5YK/fLsvM",
+        },
+      ]),
+    });
+    const result = await guard.checkApiKey({
+      headers: { authorization: "invalid-key" },
+    });
+    expect(result).toBe(false);
+  });
+
   it.skip("should generate a valid apiKey", async () => {
     const password = "live_1a6e367438327f2cf9c0d30b2f4aeac7";
     const hashedPassword = await guard.generateApiKey(password);

@@ -20,6 +20,7 @@ import { ItemService } from "../item/item.service";
 import { TelegramAPIService } from "../telegram/telegram.service";
 import { unquote } from "../common/unquote";
 import { isDuplicateKeyError } from "../common/mongo-errors";
+import { accessTokensMatch, generateOrderAccessToken } from "./order-access-token";
 
 interface ResolvedPosition {
   itemId: string;
@@ -85,6 +86,7 @@ export class OrderService {
       deliveryType: dto.deliveryType,
       paymentType: dto.paymentType,
       promocode: dto.promocode ?? "",
+      accessToken: generateOrderAccessToken(),
       ...(dto.paymentType === PaymentType.SCHET && dto.schetInfo
         ? { schetInfo: dto.schetInfo }
         : {}),
@@ -146,6 +148,7 @@ export class OrderService {
       .find({
         $or: [{ paymentType: { $ne: PaymentType.ONLINE } }, { paid: true }],
       })
+      .select("-accessToken")
       .exec();
   }
 
@@ -153,9 +156,11 @@ export class OrderService {
     return this.orderModel.findById(id).exec();
   }
 
-  async findPublicStatus(id: string): Promise<OrderStatusDto | null> {
+  async findPublicStatus(id: string, token?: string): Promise<OrderStatusDto | null> {
+    if (!token) return null;
     const order = await this.orderModel.findById(id).exec();
-    if (!order) return null;
+    if (!order?.accessToken) return null;
+    if (!accessTokensMatch(token, order.accessToken)) return null;
     return this.toPublicStatus(order);
   }
 

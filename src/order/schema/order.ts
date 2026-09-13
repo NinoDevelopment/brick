@@ -135,6 +135,9 @@ export class Order {
 
   @Prop()
   schetInfo?: SchetInfo;
+
+  @Prop()
+  accessToken?: string;
 }
 export const OrderSchema = SchemaFactory.createForClass(Order);
 OrderSchema.index({ createdAt: -1 });

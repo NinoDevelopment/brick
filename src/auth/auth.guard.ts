@@ -3,7 +3,9 @@ import { InjectModel } from "@nestjs/mongoose";
 import { Model } from "mongoose";
 import * as argon2 from "argon2";
 import { randomBytes } from "crypto";
+import type { IncomingHttpHeaders } from "http";
 import { Auth } from "./schema/auth";
+import { extractAdminSecret } from "./admin-cookie";
 
 @Injectable()
 export class AuthGuard implements CanActivate {
@@ -23,14 +25,14 @@ export class AuthGuard implements CanActivate {
     return this.checkApiKey(request);
   }
 
-  public async checkApiKey(request: { headers?: Record<string, unknown> }): Promise<boolean> {
-    const authHeader = request.headers?.["authorization"];
-    if (typeof authHeader !== "string" || !authHeader) {
+  public async checkApiKey(request: { headers?: IncomingHttpHeaders }): Promise<boolean> {
+    const secret = extractAdminSecret(request.headers);
+    if (!secret) {
       throw new UnauthorizedException("не авторизован");
     }
     const hashes = await this.getHashes();
     for (const hash of hashes) {
-      if (await this.verifyKeyWithHash(authHeader, hash)) return true;
+      if (await this.verifyKeyWithHash(secret, hash)) return true;
     }
     return false;
   }

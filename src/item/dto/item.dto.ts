@@ -12,6 +12,7 @@ import {
 
 export class CreateItemDto {
   @IsNotEmpty()
+  @IsString()
   name: string;
 
   @IsMongoId()

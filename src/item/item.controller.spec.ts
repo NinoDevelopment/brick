@@ -70,4 +70,22 @@ describe("ItemController", () => {
     expect(itemService.findImages).toHaveBeenCalledWith(mongoId);
     expect(itemService.findById).not.toHaveBeenCalled();
   });
+
+  it("POST /item accepts CMS text that JSON-LD must encode", async () => {
+    const payload = {
+      name: "</script><script>alert(1)</script>",
+      categoryId: mongoId,
+      description: "Размер < 250",
+      pack: 400,
+      price: 12,
+      available: true,
+      color: "red",
+      isRecommendation: false,
+      show: true,
+    };
+    itemService.create.mockResolvedValue({ _id: mongoId, ...payload });
+
+    await request(app.getHttpServer()).post("/item").send(payload).expect(201);
+    expect(itemService.create).toHaveBeenCalledWith(payload);
+  });
 });
